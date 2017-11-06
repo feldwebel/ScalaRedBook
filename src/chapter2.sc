@@ -13,12 +13,9 @@ fib(6) //8
 fib(7) //13
 
 def isSorted[A](as: Array[A], ordered: (A,A) => Boolean): Boolean = {
-  def f1(n: Int): Boolean = {
-    if (n >= as.length - 1) true
-    else if (!ordered(as(n), as(n + 1))) false
-    else f1(n+1)
-  }
-  f1(0)
+  if (as.length <= 1) true
+  else if (!ordered(as(0), as(1))) false
+  else isSorted(as.tail, ordered)
 }
 
 isSorted(Array(1, 2, 3, 4, 5), (x:Int, y:Int) => x <= y) //true
