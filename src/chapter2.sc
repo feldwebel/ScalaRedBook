@@ -40,7 +40,7 @@ def uncurry[A,B,C](f: A => B => C): (A, B) => C =
 
 def f2(a: Int)(b: Int): Int = a / b
 
-uncurry(f2)(6, 3) // 6 / 2
+uncurry(f2)(6, 3) // 6 / 3
 
 f2(6)(3) == uncurry(f2)(6, 3)
 
