@@ -28,9 +28,36 @@ object MyChapter3 {
     }
 
     def dropWhile[A](l: List[A], f: A => Boolean): List[A] = l match {
-      case Cons(h, t) if f(h) => List.dropWhile(t, f)
+      case Cons(h, t) if f(h) => dropWhile(t, f)
       case _ => l
     }
+
+    def init[A](l: List[A]): List[A] = l match {
+      case Nil | Cons(_, Nil) => Nil
+      case Cons(h, t) => Cons(h, init(t))
+    }
+
+    def foldRight[A,B](as: List[A], z: B)(f: (A, B) => B): B =
+      as match {
+        case Nil => z
+        case Cons(x, xs) => f(x, foldRight(xs, z)(f))
+      }
+
+    def length[A](as: List[A]): Int =
+      foldRight(as, 0)((_, acc) => acc + 1)
+
+    @annotation.tailrec
+    def foldLeft[A,B](as: List[A], z: B)(f: (B, A) => B): B =
+      as match {
+        case Nil => z
+        case Cons(h, t) => foldLeft(t, f(z, h))(f)
+      }
+
+    def sumLeft(as: List[Int]) =
+      foldLeft(as, 0)((x, y) => x + y)
+
+    def productLeft(as: List[Int]) =
+      foldLeft(as, 1.0)((x, y) => x * y)
 
   }
 
@@ -46,5 +73,14 @@ object MyChapter3 {
 
   List.dropWhile(a, (x: Int) => x < 3)
 
+  List.init(a)
+
+  List.length(a)
+
+  List.foldLeft(a, 0)((x: Int, y: Int) => x + y)
+
+  List.sumLeft(a)
+
+  List.productLeft(a)
 
 }
