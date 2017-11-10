@@ -44,7 +44,7 @@ object MyChapter3 {
       }
 
     def length[A](as: List[A]): Int =
-      foldRight(as, 0)((_, acc) => acc + 1)
+      foldRight(as, 0)((_, a) => a + 1)
 
     @annotation.tailrec
     def foldLeft[A,B](as: List[A], z: B)(f: (B, A) => B): B =
@@ -58,6 +58,9 @@ object MyChapter3 {
 
     def productLeft(as: List[Int]) =
       foldLeft(as, 1.0)((x, y) => x * y)
+
+    def reverse[A](as: List[A]): List[A] =
+      foldLeft(as, List[A]())((a, h) => Cons(h, a))
 
   }
 
@@ -82,5 +85,7 @@ object MyChapter3 {
   List.sumLeft(a)
 
   List.productLeft(a)
+
+  List.reverse(a)
 
 }
