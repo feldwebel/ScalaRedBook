@@ -40,7 +40,7 @@ object MyChapter3 {
     def foldRight[A,B](as: List[A], z: B)(f: (A, B) => B): B =
       as match {
         case Nil => z
-        case Cons(x, xs) => f(x, foldRight(xs, z)(f))
+        case Cons(h, t) => f(h, foldRight(t, z)(f))
       }
 
     def length[A](as: List[A]): Int =
@@ -61,6 +61,9 @@ object MyChapter3 {
 
     def reverse[A](as: List[A]): List[A] =
       foldLeft(as, List[A]())((a, h) => Cons(h, a))
+
+    def append[A](first: List[A], second: List[A]): List[A] =
+      foldLeft(second, first)(Cons(_, first))
 
   }
 
@@ -87,5 +90,8 @@ object MyChapter3 {
   List.productLeft(a)
 
   List.reverse(a)
+
+  List.append(a, b)
+
 
 }
