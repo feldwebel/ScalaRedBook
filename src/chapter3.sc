@@ -63,7 +63,7 @@ object MyChapter3 {
       foldLeft(as, List[A]())((a, h) => Cons(h, a))
 
     def append[A](first: List[A], second: List[A]): List[A] =
-      foldLeft(second, first)(Cons(_, first))
+      foldLeft(second, first)((acc, h) => Cons(h, acc))
 
   }
 
