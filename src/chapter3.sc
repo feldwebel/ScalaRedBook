@@ -151,22 +151,62 @@ object MyChapter3 {
 
   List.zipWith(List(1, 2, 3), List(4, 5, 6))(_ + _)
 
-  List.hasSubsequence(a, List(2, 3))
+  //List.hasSubsequence(a, List(2, 3))
 
   sealed trait Tree[+A]
   case class Leaf[A](value: A) extends Tree[A]
   case class Branch[A](left: Tree[A], right: Tree[A]) extends Tree[A]
 
   object Tree {
+
+    def apply[A](a: A): Tree[A] = Leaf(a)
+    def apply[A](a: Tree[A], b: Tree[A]): Tree[A] = Branch(a, b)
+
     def size[A](t: Tree[A]): Int =
       t match {
         case Leaf(_) => 1
-        case Tree(left, right) => 1 + size(left) + size(right)
+        case Branch(left, right) => 1 + size(left) + size(right)
       }
+
+    def maximum[A](t: Tree[A]): Int = {
+        t match {
+          case Leaf(x) => x.toString.toInt
+          case Branch(left, right) => {
+            /*val l = maximum(left)
+            val r = maximum(right)
+            if (l > r) l else r*/
+            maximum(left) max maximum(right)
+          }
+        }
+    }
+
+    def depth[A](t: Tree[A]):Int = t match {
+      case Leaf(_) => 1
+      case Branch(left, right) => {
+        /*val l = depth(left)
+        val r = depth(right)
+        if (l > r) l + 1 else r + 1*/
+        (depth(left) max depth(right)) + 1
+      }
+    }
+
+    def map[A, B](t: Tree[A])(f: A => B): Tree[B] = t match {
+      case Leaf(x) => Leaf(f(x))
+      case Branch(left, right) => Branch(map(left)(f), map(right)(f))
+    }
+
+    //def fold[A](t: Tree[A])()
   }
 
-  val t1 = Branch(Branch(Branch(Leaf(1), Leaf(2)), Leaf(4)))
+  val t1 = Tree(Tree(Tree(Tree(1), Tree(22)), Tree(4)), Tree(3))
 
+  Tree.size(t1)
+
+  Tree.maximum(t1)
+
+  Tree.depth(t1)
+
+  Tree.map(t1)((i) => i + 1)
 
 }
 
