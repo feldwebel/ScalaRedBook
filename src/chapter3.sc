@@ -202,8 +202,8 @@ object MyChapter3 {
         case Branch(left, right) => f2(fold(left)(f)(f2), fold(right)(f)(f2))
       }
 
-    /*def mapViaFold[A,B](t: Tree[A])(g:A => B): Tree[B] =
-      fold(t1)(x => Leaf(g(x)): Tree[B])((x1, x2) => Branch(x1, x2))*/
+    def mapViaFold[A,B](t: Tree[A])(g:A => B): Tree[B] =
+      fold(t)(x => Leaf(g(x)): Tree[B])((x1, x2) => Branch(x1, x2))
   }
 
   val t1 = Tree(Tree(Tree(Tree(1), Tree(22)), Tree(4)), Tree(3))
@@ -222,7 +222,7 @@ object MyChapter3 {
 
   Tree.fold(t1)(x => 1)((x1, x2) => (x1 max x2) + 1)//depth
 
-  //Tree.mapViaFold(t1)(i => i + 1)
+  Tree.mapViaFold(t1)(i => i + 1)
 
 }
 
