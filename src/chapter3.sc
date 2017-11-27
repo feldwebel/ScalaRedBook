@@ -168,34 +168,42 @@ object MyChapter3 {
         case Branch(left, right) => 1 + size(left) + size(right)
       }
 
-    def maximum[A](t: Tree[A]): Int = {
-        t match {
-          case Leaf(x) => x.toString.toInt
-          case Branch(left, right) => {
-            /*val l = maximum(left)
-            val r = maximum(right)
-            if (l > r) l else r*/
-            maximum(left) max maximum(right)
-          }
+    def maximum[A](t: Tree[A]): Int =
+      t match {
+        case Leaf(x) => x.toString.toInt
+        case Branch(left, right) => {
+          /*val l = maximum(left)
+          val r = maximum(right)
+          if (l > r) l else r*/
+          maximum(left) max maximum(right)
         }
-    }
-
-    def depth[A](t: Tree[A]):Int = t match {
-      case Leaf(_) => 1
-      case Branch(left, right) => {
-        /*val l = depth(left)
-        val r = depth(right)
-        if (l > r) l + 1 else r + 1*/
-        (depth(left) max depth(right)) + 1
       }
-    }
 
-    def map[A, B](t: Tree[A])(f: A => B): Tree[B] = t match {
-      case Leaf(x) => Leaf(f(x))
-      case Branch(left, right) => Branch(map(left)(f), map(right)(f))
-    }
+    def depth[A](t: Tree[A]):Int =
+      t match {
+        case Leaf(_) => 1
+        case Branch(left, right) => {
+          /*val l = depth(left)
+          val r = depth(right)
+          if (l > r) l + 1 else r + 1*/
+          (depth(left) max depth(right)) + 1
+        }
+      }
 
-    //def fold[A](t: Tree[A])()
+    def map[A, B](t: Tree[A])(f: A => B): Tree[B] =
+      t match {
+        case Leaf(x) => Leaf(f(x))
+        case Branch(left, right) => Branch(map(left)(f), map(right)(f))
+      }
+
+    def fold[A,B](t: Tree[A])(f: A => B)(f2: (B, B) => B): B =
+      t match {
+        case Leaf(x) => f(x)
+        case Branch(left, right) => f2(fold(left)(f)(f2), fold(right)(f)(f2))
+      }
+
+    /*def mapViaFold[A,B](t: Tree[A])(g:A => B): Tree[B] =
+      fold(t1)(x => Leaf(g(x)): Tree[B])((x1, x2) => Branch(x1, x2))*/
   }
 
   val t1 = Tree(Tree(Tree(Tree(1), Tree(22)), Tree(4)), Tree(3))
@@ -206,7 +214,15 @@ object MyChapter3 {
 
   Tree.depth(t1)
 
-  Tree.map(t1)((i) => i + 1)
+  Tree.map(t1)(i => i + 1)
+
+  Tree.fold(t1)(x => 1)((x1, x2) => 1 + x1 + x2)//size
+
+  Tree.fold(t1)(x => x.toString.toInt)((x1, x2) => x1 max x2)//maximum
+
+  Tree.fold(t1)(x => 1)((x1, x2) => (x1 max x2) + 1)//depth
+
+  //Tree.mapViaFold(t1)(i => i + 1)
 
 }
 
