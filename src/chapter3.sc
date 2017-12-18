@@ -102,9 +102,11 @@ object MyChapter3 {
 
     def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = {
       val origSub = sub;
+      @annotation.tailrec
       def subSeq(sup: List[A], sub: List[A]): Boolean =
         (sup, sub) match {
           case (_, Nil) => true
+          case (Nil, _) => false
           case (Cons(h1, t1), Cons(h2, t2)) if (h1 == h2) => subSeq(t1, t2)
           case (Cons(h1, t1), Cons(h2, t2)) if (h1 != h2) => subSeq(t1, origSub)
           case _ => false
@@ -162,6 +164,7 @@ object MyChapter3 {
 
   List.hasSubsequence(a, List(2, 3))
   List.hasSubsequence(a, List(14, 88))
+  List.hasSubsequence(a, List(4, 5, 6))
 
   sealed trait Tree[+A]
   case class Leaf[A](value: A) extends Tree[A]
