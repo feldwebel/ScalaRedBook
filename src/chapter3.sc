@@ -88,16 +88,14 @@ object MyChapter3 {
 
     def coupling(first: List[Int], second: List[Int]): List[Int] =
       (first, second) match {
-        case (_, Nil) => Nil
-        case (Nil, _) => Nil
         case (Cons(h1, t1), Cons(h2, t2)) => Cons(h1 + h2, coupling(t1, t2))
+        case _ => Nil
       }
 
     def zipWith[A,B](first: List[A], second: List[A])(f: (A, A) => B ): List[B] =
       (first, second) match {
-        case (_, Nil) => Nil
-        case (Nil, _) => Nil
         case (Cons(h1, t1), Cons(h2, t2)) => Cons(f(h1, h2), zipWith(t1, t2)(f))
+        case _ => Nil
       }
 
     def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = {
@@ -106,7 +104,6 @@ object MyChapter3 {
       def subSeq(sup: List[A], sub: List[A]): Boolean =
         (sup, sub) match {
           case (_, Nil) => true
-          case (Nil, _) => false
           case (Cons(h1, t1), Cons(h2, t2)) if (h1 == h2) => subSeq(t1, t2)
           case (Cons(h1, t1), Cons(h2, t2)) if (h1 != h2) => subSeq(t1, origSub)
           case _ => false
@@ -120,6 +117,11 @@ object MyChapter3 {
   val b = List(88)
   val c = List(List(11, 22, 33), List(44, 55, 66))
   val d = List(1.5, 2.71, 3.14)
+
+  List.hasSubsequence(a, List(2, 3))
+  List.hasSubsequence(a, List(14, 88))
+  List.hasSubsequence(a, List(4, 5, 6))
+  List.hasSubsequence(List(1,1,2,3), List(1,2,3))
 
   List.tail(a)
   List.tail(b)
@@ -161,10 +163,6 @@ object MyChapter3 {
   List.coupling(List(1, 2, 3), List(4, 5, 6))
 
   List.zipWith(List(1, 2, 3), List(4, 5, 6))(_ + _)
-
-  List.hasSubsequence(a, List(2, 3))
-  List.hasSubsequence(a, List(14, 88))
-  List.hasSubsequence(a, List(4, 5, 6))
 
   sealed trait Tree[+A]
   case class Leaf[A](value: A) extends Tree[A]
