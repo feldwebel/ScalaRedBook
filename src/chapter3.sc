@@ -99,13 +99,19 @@ object MyChapter3 {
       }
 
     def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = {
-      val origSub = sub;
+      val origSub = sub
+      def hd[A](l: List[A]) = l match {
+        case Cons(h, _) => h
+        case _ => null
+      }
+      
       @annotation.tailrec
       def subSeq(sup: List[A], sub: List[A]): Boolean =
         (sup, sub) match {
           case (_, Nil) => true
           case (Cons(h1, t1), Cons(h2, t2)) if (h1 == h2) => subSeq(t1, t2)
-          case (Cons(h1, t1), Cons(h2, t2)) if (h1 != h2) => subSeq(t1, origSub)
+          case (Cons(h1, t1), Cons(h2, t2)) if (h1 != h2 && h2 == hd(origSub)) => subSeq(t1, origSub)
+          case (Cons(h1, t1), Cons(h2, t2)) if (h1 != h2 && h2 != hd(origSub)) => subSeq(sup, origSub)
           case _ => false
         }
 
