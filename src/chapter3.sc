@@ -104,7 +104,7 @@ object MyChapter3 {
         case Cons(h, _) => h
         case _ => null
       }
-      
+
       @annotation.tailrec
       def subSeq(sup: List[A], sub: List[A]): Boolean =
         (sup, sub) match {
