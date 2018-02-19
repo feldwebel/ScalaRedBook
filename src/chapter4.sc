@@ -38,9 +38,20 @@ object MyChapter4 {
     mean(xs) flatMap (m => mean(xs.map(x => math.pow(x - m, 2))))
   }
 
+  def map2[A,B,C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] =
+    a flatMap (a1 => b map (b1 => f(a1, b1)))
+
+  def sequence[A](a: List[Option[A]]): Option[List[A]] =
+    a match {
+      case Nil => Some(Nil)
+      case h :: t => h flatMap (h1 => sequence(t) map (h1 :: _))
+    }
+
+
   val x = Some(88)
   val y = Some(14)
   val z = Seq(2.72, 3.14, 14.88, 66.6)
+  val w = List(Some(2.72), Some(3.14), Some(14.88), Some(66.6))
   def twice(a: Any): Option[Int] = a match {
     case a: Int => Some(a * 2)
     case _ => None
@@ -58,5 +69,9 @@ object MyChapter4 {
   y.filter(a => a > 80) // None
 
   variance(z)
+
+  map2(x, y)((a, b) => a * b)
+
+  sequence(w)
 
 }
