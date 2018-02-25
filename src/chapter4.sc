@@ -47,11 +47,21 @@ object MyChapter4 {
       case h :: t => h flatMap (h1 => sequence(t) map (h1 :: _))
     }
 
+  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] =
+    a match {
+      case Nil => Some(Nil)
+      case h :: t => for {
+        hv <- f(h)
+        r <- traverse(t)(f)
+      } yield hv :: r
+    }
 
   val x = Some(88)
   val y = Some(14)
   val z = Seq(2.72, 3.14, 14.88, 66.6)
+  val q = List(2, 3, 14, 66)
   val w = List(Some(2.72), Some(3.14), Some(14.88), Some(66.6))
+  val v = List("[eq", "govno", "muravei")
   def twice(a: Any): Option[Int] = a match {
     case a: Int => Some(a * 2)
     case _ => None
@@ -73,5 +83,29 @@ object MyChapter4 {
   map2(x, y)((a, b) => a * b)
 
   sequence(w)
+
+  traverse(v)(twice)
+  traverse(q)(twice)
+
+  case class Left[+E](value: E) extends Either[E, Nothing]
+  case class Right[+A](value: A) extends Either[Nothing, A]
+  sealed trait Either[+E, +A]{
+    def map[B](f: A => B): Either[E, B] = this match {
+      case Left(e) => Left(e)
+      case Right(a) => Right(f(a))
+    }
+
+    def flatMap[EE >: E, B](f: A => Either[EE, B]): Either[EE, B] = this match {
+      case Left(e) => Left(e)
+      case Right(a) => f(a)
+    }
+    def orElse[EE >: E,B >: A](b: => Either[EE, B]): Either[EE, B] = this match {
+      case Left(e) => b
+      case Right(a) => this
+    }
+    def map2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] =
+      this.flatMap(a1 => b.map(b1 => f(a1,b1)))
+
+  }
 
 }
