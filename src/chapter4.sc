@@ -50,10 +50,7 @@ object MyChapter4 {
   def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] =
     a match {
       case Nil => Some(Nil)
-      case h :: t => for {
-        hv <- f(h)
-        r <- traverse(t)(f)
-      } yield hv :: r
+      case h :: t => map2(f(h), traverse(t)(f))(_ :: _)
     }
 
   val x = Some(88)
@@ -61,7 +58,7 @@ object MyChapter4 {
   val z = Seq(2.72, 3.14, 14.88, 66.6)
   val q = List(2, 3, 14, 66)
   val w = List(Some(2.72), Some(3.14), Some(14.88), Some(66.6))
-  val v = List("[eq", "govno", "muravei")
+  val v = List("[eq", "ujdyj", "muravei")
   def twice(a: Any): Option[Int] = a match {
     case a: Int => Some(a * 2)
     case _ => None
@@ -105,7 +102,41 @@ object MyChapter4 {
     }
     def map2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] =
       this.flatMap(a1 => b.map(b1 => f(a1,b1)))
-
   }
 
+  def traverse1[E,A,B](a: List[A])(f: A => Either[E, B]): Either[E, List[B]] =
+    a match {
+      case Nil => Right(Nil)
+      case h::t => (f(h) map2 traverse1(t)(f))(_ :: _)
+    }
+
+  def sequence1[E,A](a: List[Either[E,A]]): Either[E,List[A]] =
+    traverse1(a)(x => x)
+
+  val ee1 : Either[String, Int] = Left("error")
+  val ee2 : Either[String, Int] = Right(88)
+  val ee3 = List(Right(2.72), Right(3.14), Right(14.88))
+  val ee4 =  ee3 :+ Left("error")
+  def thrice(a: Any): Either[String, Int] = a match {
+    case a: Int => Right(a * 3)
+    case _ => Left("error")
+  }
+
+  ee1.map(_ + 2) //Left("error")
+  ee2.map(_ + 2) //Right(90)
+
+  ee1.flatMap(thrice) //Left("error")
+  ee2.flatMap(thrice) //Right(264)
+
+  ee1.orElse(Left("kuku")) //Left("kuku")
+  ee2.orElse(Left("kuku")) //Right(88)
+
+  ee1.map2(Right(14))((a, b) => a + b) //Left("error")
+  ee2.map2(Right(14))((a, b) => a + b) //Right(102)
+
+  traverse1(v)(thrice) //Left(error)
+  traverse1(q)(thrice) //Right(List(6, 9, 42, 198))
+
+  sequence1(ee3) //Right(List(2.72, 3.14, 14.88))
+  sequence1(ee4) //Left(error)
 }
