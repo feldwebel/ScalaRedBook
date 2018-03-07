@@ -40,6 +40,21 @@ object MyChapter5 {
 
     def takeWhileFoldRight(p: A => Boolean): Stream[A] =
       foldRight(Empty: Stream[A])((hd, tl) => if (p(hd)) Stream.cons(hd, tl) else Empty)
+
+    def headOptionFoldRight: Option[A] =
+        foldRight(None: Option[A])((hd, _) => Some(hd))
+
+    def map[B](f: A => B): Stream[B] =
+      foldRight(Empty: Stream[B])((hd, tl) => Stream.cons(f(hd), tl))
+
+    def filter(p: A => Boolean): Stream[A] =
+      foldRight(Empty: Stream[A])((hd, tl) => if (p(hd)) Stream.cons(hd, tl) else tl)
+
+    def append[B>:A](s: Stream[B]): Stream[B] =
+      foldRight(s)((hd, tl) => Stream.cons(hd, tl))
+
+    def flatMap[B](f: A => Stream[B]): Stream[B] =
+      foldRight(Empty: Stream[B])((h,t) => f(h) append t)
   }
   case object Empty extends Stream[Nothing]
   case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
@@ -57,6 +72,8 @@ object MyChapter5 {
   }
 
   val x = Stream(1, 2, 3, 4, 5, 6);
+  val y = Stream(7, 8, 9, 10)
+  val z = Stream(Stream(1))
 
   x.toList
   x.take(3).toList
@@ -64,7 +81,11 @@ object MyChapter5 {
   x.takeWhile(_ < 3).toList
   x.forAll(_.isValidInt)
   x.takeWhileFoldRight(_ < 3).toList
-
-
+  x.headOption
+  x.headOptionFoldRight
+  x.map(_ * 2).toList
+  x.filter(_ % 2 == 0).toList
+  x.append(y).toList
+  x.flatMap(Stream(_)).toList
 
 }
