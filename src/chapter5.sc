@@ -1,3 +1,4 @@
+
 object MyChapter5 {
 
   sealed trait Stream[+A] {
@@ -56,6 +57,21 @@ object MyChapter5 {
     def flatMap[B](f: A => Stream[B]): Stream[B] =
       foldRight(Empty: Stream[B])((h,t) => f(h) append t)
   }
+
+  def constant[A](a: A): Stream[A] = Stream.cons(a, constant(a))
+
+  def from(n: Int): Stream[Int] = Stream.cons(n, from(n+1))
+
+  def fibs: Stream[Int] = {
+    def f1(a: Int, b: Int): Stream[Int] = Stream.cons(a, f1(b, a + b))
+    f1(0, 1)
+  }
+
+  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = f(z) match {
+    case None => Empty
+    case Some((a, s)) => Stream.cons(a, unfold(s)(f))
+  }
+
   case object Empty extends Stream[Nothing]
   case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
 
@@ -75,6 +91,18 @@ object MyChapter5 {
   val y = Stream(7, 8, 9, 10)
   val z = Stream(Stream(1))
 
+  def twice(a: Any): Option[(Int, Int)] = a match {
+    case a: Int => Some((a, a * 2))
+    case _ => None
+  }
+
+  def fibonacci(ab: (Int, Int)): Option[(Int, (Int, Int))] = ab match {
+    case (a, b) => Some((a, (b, a + b)))
+    case _ => None
+  }
+
+  def map1()
+
   x.toList
   x.take(3).toList
   x.drop(2).toList
@@ -87,5 +115,14 @@ object MyChapter5 {
   x.filter(_ % 2 == 0).toList
   x.append(y).toList
   x.flatMap(Stream(_)).toList
+  constant(x).take(5).toList
+  from(9)
+  val f = fibs
+  unfold(1)(twice).take(5).toList
+
+  unfold((0, 1))(fibonacci).take(10).toList
+
+  unfold(x)(map1).toList
+
 
 }
