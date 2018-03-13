@@ -96,13 +96,6 @@ object MyChapter5 {
     case _ => None
   }
 
-  def fibonacci(ab: (Int, Int)): Option[(Int, (Int, Int))] = ab match {
-    case (a, b) => Some((a, (b, a + b)))
-    case _ => None
-  }
-
-  def map1()
-
   x.toList
   x.take(3).toList
   x.drop(2).toList
@@ -116,13 +109,24 @@ object MyChapter5 {
   x.append(y).toList
   x.flatMap(Stream(_)).toList
   constant(x).take(5).toList
-  from(9)
+  from(9).take(10).toList
   val f = fibs
   unfold(1)(twice).take(5).toList
 
+  def fibonacci(ab: (Int, Int)): Option[(Int, (Int, Int))] = ab match {
+    case (a, b) => Some((a, (b, a + b)))
+    case _ => None
+  }
   unfold((0, 1))(fibonacci).take(10).toList
 
-  unfold(x)(map1).toList
+  def from1(n: Int): Option[(Int, Int)] = Some((n, n+1))
+  unfold(9)(from1).take(10).toList
+
+  def ones1: Option[(Int, Unit)] = Some((1,()))
+  unfold(())(_ => ones1).take(10).toList
+
+  def constant1[A](a: A): Option[(A, A)] = Some((a, a))
+  unfold(88)(constant1).take(5).toList
 
 
 }
