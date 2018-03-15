@@ -36,6 +36,8 @@ object MyChapter5 {
       case _ => Empty
     }
 
+    //via foldRight
+
     def forAll(p: A => Boolean): Boolean =
       foldRight(true)((a, b) => p(a) && b)
 
@@ -55,7 +57,31 @@ object MyChapter5 {
       foldRight(s)((hd, tl) => Stream.cons(hd, tl))
 
     def flatMap[B](f: A => Stream[B]): Stream[B] =
-      foldRight(Empty: Stream[B])((h,t) => f(h) append t)
+      foldRight(Empty: Stream[B])((hd,tl) => f(hd) append tl)
+
+    // via unfold
+
+    def map1[B](f: A => B): Stream[B] = unfold(this) {
+        case Cons(hd,tl) => Some((f(hd()), tl()))
+        case _ => None
+    }
+
+    def take1(n: Int): Stream[A] = unfold(this) {
+      case Cons(hd, tl) if n > 0 => Some(hd(), tl().take1(n - 1))
+      case _ => None
+    }
+
+    def takeWhile1(p: A => Boolean): Stream[A] = unfold(this) {
+        case Cons(hd, tl) if p(hd()) => Some(hd(), tl().takeWhile1(p))
+        case _ => None
+    }
+
+    def zipWith1[B, C](s: Stream[B])(f: (A, B) => C): Stream[C] = unfold((this, s)) {
+      case (Cons(h1, t1), Cons(h2, t2)) => Some((f(h1(), h2()), (t1(), t2())))
+      case _ => None
+    }
+
+
   }
 
   def constant[A](a: A): Stream[A] = Stream.cons(a, constant(a))
@@ -127,6 +153,12 @@ object MyChapter5 {
 
   def constant1[A](a: A): Option[(A, A)] = Some((a, a))
   unfold(88)(constant1).take(5).toList
+
+  x.map1(_ * 2).toList
+  x.take1(3).toList
+  x.takeWhile1(_ < 3).toList
+  x.zipWith1(x)(_ + _).toList
+
 
 
 }
