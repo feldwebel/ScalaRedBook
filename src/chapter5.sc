@@ -82,10 +82,26 @@ object MyChapter5 {
     }
 
     def zipAll[B](s2: Stream[B]): Stream[(Option[A],Option[B])] = unfold((this, s2)) {
-      case (Cons(h1, t1), Cons(h2, t2)) => Some((f(h1(), h2()), (t1(), t2())))
-      case (Empty, Cons(h2, t2)) => Some()
+      case (Cons(h1, t1), Cons(h2, t2)) => Some(((Some(h1()), Some(h2())), (t1(), t2())))
+      case (Empty, Cons(h2, t2)) => Some(((None, Some(h2())), (Empty, t2())))
+      case (Cons(h1, t1), Empty) => Some(((Some(h1()), None), (t1(), Empty)))
       case _ => None
     }
+
+    def startsWith[A](s: Stream[A]): Boolean =
+      zipAll(s).takeWhile(!_._2.isEmpty) forAll {case(h1, h2) => h1 == h2}
+
+    def tails: Stream[Stream[A]] = unfold(this) {
+      case Empty => None
+      case s => Some((s, s drop 1))
+    } append Stream(Stream.empty)
+
+    def scanRight[B](acc: B)(f: (A, => B) => B): Stream[B] =
+      foldRight((acc, Stream(acc)))((a, b) => {
+         lazy val b1 = b
+         val b2 = f(a, b1._1)
+         (b2, Stream.cons(b2, b1._2))
+      })._2
 
   }
 
@@ -119,6 +135,7 @@ object MyChapter5 {
   }
 
   val x = Stream(1, 2, 3, 4, 5, 6);
+  val x1 = Stream(1, 2, 3)
   val y = Stream(7, 8, 9, 10)
   val z = Stream(Stream(1))
 
@@ -164,6 +181,12 @@ object MyChapter5 {
   x.takeWhile1(_ < 3).toList
   x.zipWith1(x)(_ + _).toList
 
+  x.zipAll(y).toList
+  x.startsWith(x1)
+  x.startsWith(y)
 
+  y.tails.toList
+
+  Stream(1,2,3).scanRight(0)(_ + _).toList
 
 }
