@@ -18,7 +18,10 @@ object MyChapter6 {
       (if (i < 0) -(i + 1) else i, r)
     }
 
-    def double(rng: RNG): (Double, RNG)
+    def double(rng: RNG): (Double, RNG) = {
+      val (i, r) = nonNegativeInt(rng)
+      (i / (Int.MaxValue.toDouble + 1), r)
+    }
 
 
   }
@@ -28,6 +31,7 @@ val (a, r2) = r1.nextInt
 val (b, r3) = r1.nonNegativeInt(r2)
 val (c, r4) = r1.nonNegativeInt(r3)
 val (d, r5) = r1.nonNegativeInt(r3)
+  val (e, r6) = r1.double(r1)
 
 
 
