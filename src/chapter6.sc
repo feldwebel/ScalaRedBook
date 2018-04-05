@@ -54,6 +54,18 @@ object MyChapter6 {
     ints1(count, rng, List())
   }
 
+  type Rand[+A] = RNG => (A, RNG)
+  val int: Rand[Int] = _.nextInt
+  def map[A,B](s: Rand[A])(f: A => B): Rand[B] =
+    rng => {
+      val (a, rng2) = s(rng)
+      (f(a), rng2)
+    }
+  def nonNegativeEven: Rand[Int] =
+    map(nonNegativeInt)(i => i - i % 2)
+
+  def doubleMap: Rand[Double] =
+    map(nonNegativeInt)(_ / (Int.MaxValue.toDouble + 1))
 
   val r1 = SimpleRNG(42)
 val (a, r2) = r1.nextInt
@@ -67,7 +79,7 @@ val (d, r5) = nonNegativeInt(r3)
   double3(r1)
 
   ints(3)(r1)
-
-
+  
+  doubleMap(r1) == double(r1) //true
 
 }
