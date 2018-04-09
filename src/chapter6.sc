@@ -67,6 +67,14 @@ object MyChapter6 {
   def doubleMap: Rand[Double] =
     map(nonNegativeInt)(_ / (Int.MaxValue.toDouble + 1))
 
+  def map2[A,B,C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
+    rng => {
+      val (a, r1) = ra(rng)
+      val (b, r2) = rb(r1)
+      (f(a, b), r2)
+    }
+
+
   val r1 = SimpleRNG(42)
 val (a, r2) = r1.nextInt
 val (b, r3) = nonNegativeInt(r2)
@@ -79,7 +87,9 @@ val (d, r5) = nonNegativeInt(r3)
   double3(r1)
 
   ints(3)(r1)
-  
+
   doubleMap(r1) == double(r1) //true
+
+  map2(int, int)(_ + _)
 
 }
