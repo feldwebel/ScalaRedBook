@@ -15,3 +15,4 @@ for (aa <-x; bb <-y) yield { aa + bb}
 
 a.zipAll(c, 0, 0)
 
+c.foldRight(List[Int]())((item: Int, acc: List[Int]) => (item * 2) :: acc)

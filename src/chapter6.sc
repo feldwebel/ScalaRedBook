@@ -74,6 +74,9 @@ object MyChapter6 {
       (f(a, b), r2)
     }
 
+  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = ???
+
+
 
   val r1 = SimpleRNG(42)
 val (a, r2) = r1.nextInt
