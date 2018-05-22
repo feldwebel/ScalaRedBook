@@ -24,8 +24,8 @@ isSorted(Array(1, 2, 3, 4, 5), (x:Int, y:Int) => x <= y) //true
 isSorted(Array(1, 2, 3, 4, 3), (x:Int, y:Int) => x <= y) //false
 
 
-def curry[A,B,C](f: (A, B) => C): A => (B => C) =
-  (a) => (b) => f(a, b)
+def curry[A,B,C](f: (A, B) => C): A => B => C =
+  a => b => f(a, b)
 
 def f1(a: Int, b: Int): Int = a / b
 
@@ -36,6 +36,7 @@ f1(6, 3) == curry(f1)(6)(3) //true
 
 def uncurry[A,B,C](f: A => B => C): (A, B) => C =
   (a, b) => f(a)(b)
+// f(_)(_)
 
 def f2(a: Int)(b: Int): Int = a / b
 
@@ -44,7 +45,7 @@ uncurry(f2)(6, 3) // 6 / 3
 f2(6)(3) == uncurry(f2)(6, 3)
 
 def compose[A,B,C](f: B => C, g: A => B): A => C =
-  (a) => f(g(a))
+  a => f(g(a))
 
 def f3(a: Int) = a + 2
 def f4(b: Int) = b * 2
