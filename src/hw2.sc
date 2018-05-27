@@ -7,6 +7,26 @@ object Lesson {
   val result1 = surround("+++")(trim(upperCase("   HelLo   ")))
 
   // ???
+  class Wrap[A] (val x: A){
+    def function[A](f: A => A): A = f(x)
+    def chainWith[A](f: A => A): A = ???
+    def andChainWith[A](f: A => A): A = ???
+    def runWith[A](s: A): A = ???
+  }
+
+  object Wrap {
+    def apply[A](f: A => A) = new Wrap(f)
+  }
+
+  trait funct[A] {
+    def f
+  }
+
+  class function[A] (f: A => A) extends funct[A] {
+    override def f: A => A = f
+  }
+
+
 
   val result2 = (
     Wrap function trim
