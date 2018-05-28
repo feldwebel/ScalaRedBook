@@ -7,33 +7,21 @@ object Lesson {
   val result1 = surround("+++")(trim(upperCase("   HelLo   ")))
 
   // ???
-  class Wrap[A] (val x: A){
-    def function[A](f: A => A): A = f(x)
-    def chainWith[A](f: A => A): A = ???
-    def andChainWith[A](f: A => A): A = ???
-    def runWith[A](s: A): A = ???
-  }
+  class Wrap[A](var f: A => A)
 
   object Wrap {
-    def apply[A](f: A => A) = new Wrap(f)
+    def function[A](f: A => A): Wrap[A] = new Wrap(f)
   }
 
-  trait funct[A] {
-    def f
-  }
-
-  class function[A] (f: A => A) extends funct[A] {
-    override def f: A => A = f
-  }
 
 
 
   val result2 = (
     Wrap function trim
-      chainWith     upperCase
-      andChainWith  surround("+++")
-      runWith       "   HelLo   "
-    )
+    //chainWith     upperCase'
+    // andChainWith  surround("+++")
+    //runWith       "   HelLo   "
+  )
 
-  result1 = result2 // TRUE!
+  result1 == result2 // TRUE!*/
 }
