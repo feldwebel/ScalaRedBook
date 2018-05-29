@@ -7,14 +7,12 @@ object Lesson {
   val result1 = surround("+++")(trim(upperCase("   HelLo   ")))
 
   // ???
-  class Wrap[A](var f: A => A) {
+  class Wrap[A](val f: A => A) {
     def chainWith(f1: A => A) = {
-      this.f = f1.compose(f)
-      this
+      new Wrap(f1.compose(this.f))
     }
     def andChainWith(f2: A => A) = {
-      this.f = f2.compose(f)
-      this
+      new Wrap(f2.compose(this.f))
     }
     def runWith(s: A): A = {
       f(s)
