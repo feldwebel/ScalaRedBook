@@ -8,15 +8,13 @@ object Lesson {
 
   // ???
   class Wrap[A](val f: A => A) {
-    def chainWith(f1: A => A) = {
+    def chainWith(f1: A => A): Wrap[A] =
       new Wrap(f1.compose(this.f))
-    }
-    def andChainWith(f2: A => A) = {
-      new Wrap(f2.compose(this.f))
-    }
-    def runWith(s: A): A = {
-      f(s)
-    }
+
+    def andChainWith(f2: A => A): Wrap[A] =
+      chainWith(f2)
+
+    def runWith(s: A): A = f(s)
   }
 
   object Wrap {
