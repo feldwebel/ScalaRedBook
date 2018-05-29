@@ -7,14 +7,15 @@ object Lesson {
   val result1 = surround("+++")(trim(upperCase("   HelLo   ")))
 
   // ???
-  class Wrap[A](val f: A => A) {
+  class Wrap[A](var f: A => A) {
     def chainWith(f1: A => A) = {
-      f1.compose(f)
+      this.f = f1.compose(f)
+      this
     }
-//    def andChainWith(f2: A => A)(s: A) = {
-//      f = f2.compose(f)
-//      f(s)
-//    }
+    def andChainWith(f2: A => A) = {
+      this.f = f2.compose(f)
+      this
+    }
     def runWith(s: A): A = {
       f(s)
     }
@@ -30,7 +31,7 @@ object Lesson {
   val result2 = (
     Wrap function trim
     chainWith     upperCase
-    //andChainWith  surround("+++")
+    andChainWith  surround("+++")
     runWith       "   HelLo   "
   )
 
