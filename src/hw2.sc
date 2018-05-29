@@ -29,5 +29,14 @@ object Lesson {
     runWith       "   HelLo   "
   )
 
-  result1 == result2 // TRUE!*/
+  result1 == result2 // TRUE!
+
+  implicit class FuncSyntax[A](f: A => A) {
+    def ~> (ff: A => A): Function1[A, A] = ff compose f
+    def ! (s: A): A = f apply s
+    //def apply(s: A): A = f(s)
+  }
+
+  val res3 = (trim _) ~> upperCase ~> surround("+++") ! ("  HelLo  ")
+
 }
