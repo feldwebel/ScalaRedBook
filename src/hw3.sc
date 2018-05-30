@@ -6,7 +6,7 @@ case class BinOp(operator: String, left: Expr, right: Expr) extends Expr
 
 def simplifyTop(e:Expr):Expr = e match {
   case BinOp(op, l, r) => simplify(BinOp(op, simplify(l), simplify(r)))
-  case UnOp(op, l) => simplify(UnOp(op, simplify(l)))
+  case UnOp(op, a) => simplify(UnOp(op, simplify(a)))
   case _ => e
 }
 
