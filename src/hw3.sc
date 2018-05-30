@@ -4,6 +4,12 @@ case class Number(num: Double) extends Expr
 case class UnOp(operator: String, arg: Expr) extends Expr
 case class BinOp(operator: String, left: Expr, right: Expr) extends Expr
 
+def simplifyTop(e:Expr):Expr = e match {
+  case BinOp(op, l, r) => simplify(BinOp(op, simplify(l), simplify(r)))
+  case UnOp(op, l) => simplify(UnOp(op, simplify(l)))
+  case _ => e
+}
+
 def simplify(e:Expr):Expr = e match {
   case BinOp("+", a, UnOp("-", b)) => simplify(BinOp("-", a, b))
   case BinOp("-", a, UnOp("-", b)) => simplify(BinOp("+", a, b))
@@ -12,6 +18,8 @@ def simplify(e:Expr):Expr = e match {
   case BinOp(_, Number(0), a) => simplify(a)
   case BinOp("*", a, Number(1)) => simplify(a)
   case BinOp("*", Number(1), a) => simplify(a)
+  case BinOp("*", _, Number(0)) => Number(0)
+  case BinOp("*", Number(0), _) => Number(0)
   case UnOp("-", UnOp("-", a)) => simplify(a)
   case UnOp("+", UnOp("+", a)) => simplify(a)
   case BinOp(op, l, r) => BinOp(op, simplify(l), simplify(r))
@@ -32,7 +40,7 @@ val ex1 =
       UnOp("-", Number(1))
     )
   )
-simplify(ex1)
+simplifyTop(ex1)
 
 
-simplify(ex1) == BinOp("-", Var("a"), Var("b"))
+simplifyTop(ex1) == BinOp("-", Var("a"), Var("b"))
