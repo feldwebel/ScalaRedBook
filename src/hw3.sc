@@ -11,17 +11,17 @@ def simplifyTop(e:Expr):Expr = e match {
 }
 
 def simplify(e:Expr):Expr = e match {
-  case BinOp("+", a, UnOp("-", b)) => simplify(BinOp("-", a, b))
-  case BinOp("-", a, UnOp("-", b)) => simplify(BinOp("+", a, b))
-  case BinOp("*", a, UnOp("-", b)) => simplify(UnOp("-", BinOp("*", a, b)))
-  case BinOp(_, a, Number(0)) => simplify(a)
-  case BinOp(_, Number(0), a) => simplify(a)
-  case BinOp("*", a, Number(1)) => simplify(a)
-  case BinOp("*", Number(1), a) => simplify(a)
-  case BinOp("*", _, Number(0)) => Number(0)
+  case BinOp("*", _, Number(0)) => Number(0) //first
   case BinOp("*", Number(0), _) => Number(0)
   case UnOp("-", UnOp("-", a)) => simplify(a)
   case UnOp("+", UnOp("+", a)) => simplify(a)
+  case BinOp(_, a, Number(0)) => simplify(a) //first case already worked
+  case BinOp("+", Number(0), a) => simplify(a)
+  case BinOp("*", a, Number(1)) => simplify(a)
+  case BinOp("*", Number(1), a) => simplify(a)
+  case BinOp("+", a, UnOp("-", b)) => simplify(BinOp("-", a, b))
+  case BinOp("-", a, UnOp("-", b)) => simplify(BinOp("+", a, b))
+  case BinOp("*", a, UnOp("-", b)) => simplify(UnOp("-", BinOp("*", a, b)))
   case BinOp(op, l, r) => BinOp(op, simplify(l), simplify(r))
   case UnOp(op, a) => UnOp(op, simplify(a))
   case _ => e
