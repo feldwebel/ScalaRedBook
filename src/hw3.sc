@@ -1,4 +1,4 @@
-abstract class Expr
+sealed trait Expr
 case class Var(name: String) extends Expr
 case class Number(num: Double) extends Expr
 case class UnOp(operator: String, arg: Expr) extends Expr
@@ -19,6 +19,8 @@ def simplify(e:Expr):Expr = e match {
   case BinOp("+", Number(0), a) => simplify(a)
   case BinOp("*", a, Number(1)) => simplify(a)
   case BinOp("*", Number(1), a) => simplify(a)
+  case BinOp("+", Number(a), Number(b)) => Number(a + b)
+  case BinOp("*", Number(a), Number(b)) => Number(a * b)
   case BinOp("+", a, UnOp("-", b)) => simplify(BinOp("-", a, b))
   case BinOp("-", a, UnOp("-", b)) => simplify(BinOp("+", a, b))
   case BinOp("*", a, UnOp("-", b)) => simplify(UnOp("-", BinOp("*", a, b)))
@@ -44,3 +46,6 @@ simplifyTop(ex1)
 
 
 simplifyTop(ex1) == BinOp("-", Var("a"), Var("b"))
+
+var ex2 = BinOp("+", Number(14), Number(88))
+simplify(ex2)
