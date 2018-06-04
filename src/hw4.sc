@@ -24,13 +24,13 @@ object Rational {
 }
 
 implicit class RationalOps(n: Int) {
-  def @@ (d: Int) = new Rational(n, d)
+  def ~/ (d: Int) = new Rational(n, d)
 }
 
 
 new Rational(2,5).*(5).+(new Rational(4,10))
 
-2 @@ 5 * 5 + 4 @@ 10 // Rational...
+2 ~/ 5 * 5 + 4 ~/ 10 // Rational...
 // приоритет операторов, общий знаменатель, красивый toString
 
-7 @@ 8 * 10 + 8 @@ 11
+7 ~/ 8 * 10 + 8 ~/ 11
