@@ -1,18 +1,28 @@
 class Rational(val n:Int, val d:Int) {
-  val e = Rational.euclid(n, d)
-
-  def *(k: Int): Rational = new Rational(n*k, d)
-  def *(k: Rational): Rational = new Rational(n*k.n, d* k.d)
-
-  def +(k: Int): Rational = new Rational(n*k*d, d*k)
-  def +(k: Rational): Rational = new Rational(n*k.n, d*k.d)
-
-  override def toString = {
-    val i = n / d
-    val n1 = (n - i * d) / e
-    val d1 = d / e
-    if (i != 0) s"$i $n1/$d1" else s"$n1/$d1"
+  case class Normalized(i: Int, n: Int, d: Int) {
+    override def toString = {
+      if (i != 0)
+        s"$i $n/$d"
+      else s"$n/$d"
+    }
   }
+
+  val e = Rational.euclid(n, d)
+  val internal =
+    Normalized(n / d, (n - (n / d) * d) / e, d / e)
+
+  def normalizedN = internal.n
+  def normalizedD = internal.d
+
+  def *(k: Int): Rational = new Rational(n * k, d)
+  def *(k: Rational): Rational =
+    new Rational(n * k.n, d * k.d)
+
+  def +(k: Int): Rational = new Rational(n * k * d, d * k)
+  def +(k: Rational): Rational =
+    new Rational(n * k.n, d * k.d)
+
+  override def toString = internal.toString
 }
 
 object Rational {
@@ -33,4 +43,8 @@ new Rational(2,5).*(5).+(new Rational(4,10))
 2 ~/ 5 * 5 + 4 ~/ 10 // Rational...
 // приоритет операторов, общий знаменатель, красивый toString
 
-7 ~/ 8 * 10 + 8 ~/ 11
+val fract = 7 ~/ 8 * 10 + 8 ~/ 11
+
+fract.normalizedN
+fract.n
+fract.d
