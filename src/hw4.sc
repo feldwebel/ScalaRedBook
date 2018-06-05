@@ -12,11 +12,12 @@ class Rational(nn:Int, dd:Int) {
   def normalizedN = internal.n
   def normalizedD = internal.d
 
-  def *(k: Int): Rational = new Rational(n * k, d)
   def *(k: Rational): Rational = new Rational(n * k.n, d * k.d)
+  //def *(k: Int): Rational = *(Rational(k, 1))
 
-  def +(k: Int): Rational = new Rational(n + k * d, d * k)
+  //def +(k: Int): Rational = new Rational(n + k * d, d * k)
   def +(k: Rational): Rational = new Rational(n * k.d + k.n * d, d * k.d)
+  //def +(k: Int): Rational = this + Rational(k, 1)
 
   override def toString = s"$n/$d"
   def normalized = internal.toString
@@ -28,21 +29,30 @@ object Rational {
   @annotation.tailrec
   def euclid(a: Int, b: Int): Int =
     if (b == 0) a else euclid(b, a % b)
+  object Implicits {
+    implicit class RationalOps(n: Int) {
+      def ~/ (d: Int) = new Rational(n, d)
+    }
+
+    implicit def IntToRational(i: Int): Rational = Rational(i, 1)
+  }
 }
 
-implicit class RationalOps(n: Int) {
-  def ~/ (d: Int) = new Rational(n, d)
+{
+  import Rational.Implicits._
+
+  new Rational(2,5).*(5).+(new Rational(4,10)) // 12/5
+
+  2 ~/ 5 * 5 + 4 ~/ 10 // 12/5
+
+  val fract: Rational = 7 ~/ 8 * 10 + 8 ~/ 11  // 417/44
+
+  fract.normalizedN // 21
+  //fract.n           // 417
+  //fract.d           // 44
+  //fract             // 417/44
+  fract.normalized  // 9 21/44
+  println(fract)
 }
 
 
-new Rational(2,5).*(5).+(new Rational(4,10)) // 12/5
-
-2 ~/ 5 * 5 + 4 ~/ 10 // 12/5
-
-val fract = 7 ~/ 8 * 10 + 8 ~/ 11  // 417/44
-
-fract.normalizedN // 21
-fract.n           // 417
-fract.d           // 44
-fract             // 417/44
-fract.normalized  // 9 21/44
