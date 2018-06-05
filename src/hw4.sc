@@ -16,8 +16,8 @@ class Rational(val n:Int, val d:Int) {
   def +(k: Int): Rational = new Rational(n * k * d, d * k)
   def +(k: Rational): Rational = new Rational(n * k.n, d * k.d)
 
-  override def toString = internal.toString
-  def raw = s"$n/$d"
+  override def toString = s"$n/$d"
+  def normalized = internal.toString
 }
 
 object Rational {
@@ -42,4 +42,5 @@ val fract = 7 ~/ 8 * 10 + 8 ~/ 11  // 6 4/11
 fract.normalizedN // 4
 fract.n           // 560
 fract.d           // 88
-fract.raw         // 560/88
+fract             // 560/88
+fract.normalized  // 6 4/11
