@@ -22,12 +22,11 @@ object less04 {
   def fib(n: Int): Int = {
     @annotation.tailrec
     def f(n: Int, a: Int, b: Int):Int =
-      if (n == 0) a else f(n - 1, b, a + b)
+      if (n == 1) a else f(n - 1, b, a + b)
 
     f(n, 0, 1)
   }
   // 0, 1, 1, 2, 3, 5, 8, 13
-  fib(0)
   fib(1)
   fib(2)
   fib(4)
