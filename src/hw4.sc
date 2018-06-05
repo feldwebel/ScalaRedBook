@@ -17,6 +17,7 @@ class Rational(val n:Int, val d:Int) {
   def +(k: Rational): Rational = new Rational(n * k.n, d * k.d)
 
   override def toString = internal.toString
+  def raw = s"$n/$d"
 }
 
 object Rational {
@@ -32,13 +33,13 @@ implicit class RationalOps(n: Int) {
 }
 
 
-new Rational(2,5).*(5).+(new Rational(4,10))
+new Rational(2,5).*(5).+(new Rational(4,10)) // 4/5
 
-2 ~/ 5 * 5 + 4 ~/ 10 // Rational...
-// приоритет операторов, общий знаменатель, красивый toString
+2 ~/ 5 * 5 + 4 ~/ 10 // 4/5
 
-val fract = 7 ~/ 8 * 10 + 8 ~/ 11
+val fract = 7 ~/ 8 * 10 + 8 ~/ 11  // 6 4/11
 
-fract.normalizedN
-fract.n
-fract.d
+fract.normalizedN // 4
+fract.n           // 560
+fract.d           // 88
+fract.raw         // 560/88
