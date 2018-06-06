@@ -41,8 +41,8 @@ array(2)
 
 array.length
 
-isSorted(array, lt)
-isSorted(ar2, lt)
-isSorted(ar3, lt)
+isSorted(array, lt) // true
+isSorted(ar2, lt)   // false
+isSorted(ar3, lt)   // true
 
 lt(8, 0)
