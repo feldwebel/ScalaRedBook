@@ -14,8 +14,10 @@ factorial(10) // 3628800
 def isSorted[A](as:Array[A])(cmp: (A,A) => Boolean):Boolean = {
   @annotation.tailrec
   def s(n: Int, acc: Boolean): Boolean = {
-    val c = cmp(as(n-1), as(n))
-    if (!c || n == 1) acc && c else s(n - 1, acc && c)
+    val r = acc && cmp(as(n-1), as(n))
+    if (r != acc) false
+    else if (n == 1) r
+    else s(n - 1, r)
   }
 
   if (as.length < 3) true else {
