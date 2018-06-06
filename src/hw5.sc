@@ -11,7 +11,7 @@ factorial(5) // 120
 factorial(10) // 3628800
 
 
-def isSorted[A](as:Array[A], cmp: (A,A) => Boolean):Boolean = {
+def isSorted[A](as:Array[A])(cmp: (A,A) => Boolean):Boolean = {
   @annotation.tailrec
   def s(n: Int, acc: Boolean): Boolean = {
     val c = cmp(as(n-1), as(n))
@@ -24,16 +24,11 @@ def isSorted[A](as:Array[A], cmp: (A,A) => Boolean):Boolean = {
   }
 }
 
-def lt[A](a: A, b: A): Boolean = (a, b) match {
-  case (x: Int, y: Int) => x <= y //typeOf Ordered ?
-  case (x: Double, y: Double) => x <= y
-  case (x: String, y: String) => x <= y
-  case (_, _) => throw new Exception("Uncomparable")
-}
-
 val array = Array(1,2,4)
 val ar2 = Array(3, 8, 0, 4)
 val ar3 = Array("a", "b", "c", "d")
+
+isSorted(Array(1, 2)) {_ < _}
 
 array(0)
 array(1)
@@ -41,8 +36,6 @@ array(2)
 
 array.length
 
-isSorted(array, lt) // true
-isSorted(ar2, lt)   // false
-isSorted(ar3, lt)   // true
-
-lt(8, 0)
+isSorted(array){_ < _} // true
+isSorted(ar2){_ <= _}   // false
+isSorted(ar3){_ <= _}   // true
