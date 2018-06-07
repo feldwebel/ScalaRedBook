@@ -21,8 +21,7 @@ def isSorted[A](as:Array[A])(cmp: (A,A) => Boolean):Boolean = {
   }
 
   if (as.length < 3) true else {
-    val acc = cmp(as(0), as(1))
-    acc == s(as.length - 1, acc)
+    s(as.length - 2, cmp(as(as.length-2), as(as.length-1)))
   }
 }
 
