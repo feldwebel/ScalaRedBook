@@ -16,3 +16,17 @@ for (aa <-x; bb <-y) yield { aa + bb}
 a.zipAll(c, 0, 0)
 
 c.foldRight(List[Int]())((item: Int, acc: List[Int]) => (item * 2) :: acc)
+
+
+val rows = 5
+val cols = 5
+val a1 = Array.ofDim[Char](rows, cols)
+
+a1(0) = "hello".toCharArray
+a1(1) = "Dolly".toCharArray
+a1(2) = "well,".toCharArray
+a1(3) = "hello".toCharArray
+a1(4) = "Dolly".toCharArray
+
+
+for { i <- 0 until rows} println(a1(i).mkString)

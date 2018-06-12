@@ -56,10 +56,17 @@ e
 e.height
 e.width
 
+case class window(x: Int, y: Int, height: Int, width: Int)
+
 def plot(e:Expr): String = {
   val matrix = Array.ofDim[Char](e.height - 1, e.width - 1)
+  e match {
+    case _: Div => ???
+    case _: Mul | _: Add | _: Sub => ???
+    case _: Var | _: Number => ???
+  }
 
-  "zhopa"
+  for { i <- 0 until e.height-1} println(matrix(i).mkString)
 }
 
 /**
