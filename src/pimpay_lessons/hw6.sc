@@ -56,19 +56,38 @@ e
 e.height
 e.width
 
-case class window(x: Int, y: Int, height: Int, width: Int)
+val u = Var("n")
+
+case class Corner(x: Int, y: Int)
 
 def plot(e:Expr): String = {
   val matrix = Array.ofDim[Char](e.height - 1, e.width - 1)
-  e match {
-    case _: Div => ???
-    case _: Mul | _: Add | _: Sub => ???
-    case _: Var | _: Number => ???
+  def populate(e: Expr, c: Corner) = {
+    def drawSimple(e: Expr, c: Corner) = {
+      val up = c.y + e.height / 2
+      val l = c.x
+      val out = e.toString
+      for { i <- 0 to e.width} matrix(up)(c.x + i) = out(i)
+    }
+    def drawBin(e: BinOp, c: Corner) = {}
+    def drawDiv(e: BinOp, c: Corner) = {}
+    e match {
+      case a: Div => drawDiv(a, c)
+      case a: Mul => drawBin(a, c)
+      case a: Add => drawBin(a, c)
+      case a: Sub => drawBin(a, c)
+      case a: Var => drawSimple(a, c)
+      case a: Number => drawSimple(a,c)
+    }
   }
+
+
+  populate(e, Corner(0, 0))
 
   for { i <- 0 until e.height-1} println(matrix(i).mkString)
 }
 
+plot(u)
 /**
   *
   * Homework:

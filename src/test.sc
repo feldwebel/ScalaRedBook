@@ -29,4 +29,4 @@ a1(3) = "hello".toCharArray
 a1(4) = "Dolly".toCharArray
 
 
-for { i <- 0 until rows} println(a1(i).mkString)
+val zzz = for { i <- 0 until rows} println(a1(i).mkString)
