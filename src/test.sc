@@ -28,5 +28,8 @@ a1(2) = "well,".toCharArray
 a1(3) = "hello".toCharArray
 a1(4) = "Dolly".toCharArray
 
+val sb = StringBuilder.newBuilder
 
-val zzz = for { i <- 0 until rows} println(a1(i).mkString)
+for { i <- 0 until rows} sb.append(a1(i).mkString + System.lineSeparator())
+
+println(sb.toString())

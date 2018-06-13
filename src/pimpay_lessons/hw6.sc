@@ -84,7 +84,10 @@ def plot(e:Expr): String = {
 
   populate(e, Corner(0, 0))
 
-  for { i <- 0 until e.height-1} println(matrix(i).mkString)
+  val result = StringBuilder.newBuilder
+  for { i <- 0 until e.height-1} result.append(matrix(i).mkString + System.lineSeparator())
+
+  result.toString()
 }
 
 plot(u)
