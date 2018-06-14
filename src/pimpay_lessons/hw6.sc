@@ -56,28 +56,41 @@ e
 e.height
 e.width
 
-val u = Var("n")
+val u = Var("sin(x)")
+u.height
+u.width
+
+val v = Add(Var("sin(x)"), Number(6))
+
 
 case class Corner(x: Int, y: Int)
 
 def plot(e:Expr): String = {
-  val matrix = Array.ofDim[Char](e.height - 1, e.width - 1)
-  def populate(e: Expr, c: Corner) = {
+  val canvas = Array.fill(e.height, e.width)(' ')
+  def populate(e: Expr, c: Corner): Unit = {
     def drawSimple(e: Expr, c: Corner) = {
       val up = c.y + e.height / 2
-      val l = c.x
       val out = e.toString
-      for { i <- 0 to e.width} matrix(up)(c.x + i) = out(i)
+
+      for { i <- 0 until e.width}
+        canvas(up)(c.x + i) = out(i)
     }
-    def drawBin(e: BinOp, c: Corner) = {}
-    def drawDiv(e: BinOp, c: Corner) = {}
+    def drawBin(e: BinOp, c: Corner) = {
+      populate(e.l, Corner(c.x, (c.y + e.l.height)/2))
+      canvas(c.y)(c.x + e.l.width + 1) = e.symbol(0)
+      populate(e.r, Corner(c.x + e.l.width + 3, (c.y + e.r.height)/2))
+    }
+    def drawDiv(e: BinOp, c: Corner) = {
+      populate(e.l, c)
+      for (i <- 0 until e.width) canvas(c.y + e.l.height)(i) = ' '
+      populate(e.r, Corner(c.x, c.y + e.l.height + 1))
+    }
     e match {
       case a: Div => drawDiv(a, c)
       case a: Mul => drawBin(a, c)
       case a: Add => drawBin(a, c)
       case a: Sub => drawBin(a, c)
-      case a: Var => drawSimple(a, c)
-      case a: Number => drawSimple(a,c)
+      case a: Expr => drawSimple(a, c)
     }
   }
 
@@ -85,12 +98,16 @@ def plot(e:Expr): String = {
   populate(e, Corner(0, 0))
 
   val result = StringBuilder.newBuilder
-  for { i <- 0 until e.height-1} result.append(matrix(i).mkString + System.lineSeparator())
+  for { i <- 0 until e.height} result.append(canvas(i).mkString + System.lineSeparator())
 
   result.toString()
 }
 
-plot(u)
+println(plot(u))
+
+println(plot(v))
+
+println(plot(e))
 /**
   *
   * Homework:

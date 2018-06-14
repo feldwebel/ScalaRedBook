@@ -33,3 +33,6 @@ val sb = StringBuilder.newBuilder
 for { i <- 0 until rows} sb.append(a1(i).mkString + System.lineSeparator())
 
 println(sb.toString())
+
+a1(0)(0)
+a1(1)(1)
