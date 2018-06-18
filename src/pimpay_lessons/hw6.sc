@@ -60,7 +60,9 @@ val u = Var("sin(x)")
 u.height
 u.width
 
-val v = Add(Var("sin(x)"), Number(6))
+val v = Mul(Number(7), Add(Var("sin(x)"), Number(6)))
+
+val dd = Add(Number(1), Div(Var("cos(x)"), Var("arccos(y)")))
 
 
 case class Corner(x: Int, y: Int)
@@ -72,8 +74,7 @@ def plot(e:Expr): String = {
       val up = c.y + e.height / 2
       val out = e.toString
 
-      for { i <- 0 until e.width}
-        canvas(up)(c.x + i) = out(i)
+      for { i <- 0 until e.width} canvas(up)(c.x + i) = out(i)
     }
     def drawBin(e: BinOp, c: Corner) = {
       populate(e.l, Corner(c.x, (c.y + e.l.height)/2))
@@ -81,9 +82,9 @@ def plot(e:Expr): String = {
       populate(e.r, Corner(c.x + e.l.width + 3, (c.y + e.r.height)/2))
     }
     def drawDiv(e: BinOp, c: Corner) = {
-      populate(e.l, c)
-      for (i <- 0 until e.width) canvas(c.y + e.l.height)(i) = ' '
-      populate(e.r, Corner(c.x, c.y + e.l.height + 1))
+      populate(e.l, Corner(c.x + (e.width - e.l.width)/2, c.y))
+      for (i <- 0 until e.width) canvas(c.y + e.l.height)(i) = '-'
+      populate(e.r, Corner(c.x + (e.width - e.r.width)/2, c.y + e.l.height + 1))
     }
     e match {
       case a: Div => drawDiv(a, c)
@@ -108,6 +109,8 @@ println(plot(u))
 println(plot(v))
 
 println(plot(e))
+
+println(plot(dd))
 /**
   *
   * Homework:
