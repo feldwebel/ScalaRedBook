@@ -36,3 +36,8 @@ println(sb.toString())
 
 a1(0)(0)
 a1(1)(1)
+
+
+//print("kuku", "\033{6;8H", "dudu")
+
+print(raw"\u001b[31mHello\u001b[0mWorld")

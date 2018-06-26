@@ -71,10 +71,10 @@ def plot(e:Expr): String = {
   val canvas = Array.fill(e.height, e.width)(' ')
   def populate(e: Expr, c: Corner): Unit = {
     def drawSimple(e: Expr, c: Corner) = {
-      val up = c.y + e.height / 2
+      val up = c.y // + e.height / 2
       val out = e.toString
 
-      for { i <- 0 until e.width} canvas(up)(c.x + i) = out(i)
+      for { i <- 1 until e.width} canvas(up)(c.x + i) = out(i-1)
     }
     def drawBin(e: BinOp, c: Corner) = {
       populate(e.l, Corner(c.x, (c.y + e.l.height)/2))
@@ -108,9 +108,12 @@ println(plot(u))
 
 println(plot(v))
 
+println(plot(dd))
+
 println(plot(e))
 
-println(plot(dd))
+
+
 /**
   *
   * Homework:
