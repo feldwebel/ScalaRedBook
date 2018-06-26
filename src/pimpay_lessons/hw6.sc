@@ -53,17 +53,16 @@ val e = Div(
   )
 )
 e
-e.height
-e.width
 
-val u = Var("sin(x)")
-u.height
-u.width
+
+val u = Div(Var("sin(x)"), Var("cos(x)"))
+
 
 val v = Mul(Number(7), Add(Var("sin(x)"), Number(6)))
 
-val dd = Add(Number(1), Div(Var("cos(x)"), Var("arccos(y)")))
-
+val dd = Add(Number(1), Div(Var("cos(x)"), Var("cos(y)")))
+dd.height
+dd.width
 
 case class Corner(x: Int, y: Int)
 
@@ -71,19 +70,17 @@ def plot(e:Expr): String = {
   val canvas = Array.fill(e.height, e.width)(' ')
   def populate(e: Expr, c: Corner): Unit = {
     def drawSimple(e: Expr, c: Corner) = {
-      val up = c.y // + e.height / 2
       val out = e.toString
-
-      for { i <- 1 until e.width} canvas(up)(c.x + i) = out(i-1)
+      for { i <- 0 until e.width} canvas(c.y)(c.x + i) = out(i)
     }
     def drawBin(e: BinOp, c: Corner) = {
-      populate(e.l, Corner(c.x, (c.y + e.l.height)/2))
-      canvas(c.y)(c.x + e.l.width + 1) = e.symbol(0)
-      populate(e.r, Corner(c.x + e.l.width + 3, (c.y + e.r.height)/2))
+      populate(e.l, Corner(c.x, c.y + (e.height - e.l.height)/2))
+      canvas(c.y + e.height/2 )(c.x + e.l.width + 1) = e.symbol(0)
+      populate(e.r, Corner(c.x + e.l.width + 3, c.y + (e.height - e.r.height)/2))
     }
     def drawDiv(e: BinOp, c: Corner) = {
       populate(e.l, Corner(c.x + (e.width - e.l.width)/2, c.y))
-      for (i <- 0 until e.width) canvas(c.y + e.l.height)(i) = '-'
+      for (i <- 0 until e.width) canvas(c.y + e.l.height)(c.x + i) = '-'
       populate(e.r, Corner(c.x + (e.width - e.r.width)/2, c.y + e.l.height + 1))
     }
     e match {
@@ -94,7 +91,6 @@ def plot(e:Expr): String = {
       case a: Expr => drawSimple(a, c)
     }
   }
-
 
   populate(e, Corner(0, 0))
 
@@ -111,8 +107,6 @@ println(plot(v))
 println(plot(dd))
 
 println(plot(e))
-
-
 
 /**
   *
