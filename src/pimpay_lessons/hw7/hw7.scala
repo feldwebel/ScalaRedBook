@@ -56,8 +56,12 @@ object MyList {
   def flatten[A](lss:MyList[MyList[A]]):MyList[A] =
     foldRight(lss, MyList[A])((i, a) => append(i, a))
 
-  def flatMap[A,B](ls:MyList[A], f: A => MyList[B]):MyList[B] = ???
-  def filter[A](ls:MyList[A], p: A => Boolean):MyList[A] = ???
+  def flatMap[A,B](ls:MyList[A], f: A => MyList[B]):MyList[B] =
+    foldRight(ls, MyList[B])((i, a) => append(f(i), a))
+
+  def filter[A](ls:MyList[A], p: A => Boolean):MyList[A] =
+    foldRight(ls, MyList[A])((i, a) => if (p(i)) MyCons(i, a) else a)
+
   def exists[A](ls:MyList[A], p: A => Boolean):Boolean = ???
   def reverse[A](ls:MyList[A]):MyList[A] = ???
 

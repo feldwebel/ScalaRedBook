@@ -10,3 +10,5 @@ MyList.map(a, (i:Int) => i * 2)
 
 MyList.append(a, b)
 MyList.flatten(c)
+MyList.flatMap(a, (x:Int) => MyList(x, x*x))
+MyList.filter(a, (x:Int) => x % 2 == 0 )
