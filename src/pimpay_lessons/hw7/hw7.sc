@@ -12,3 +12,6 @@ MyList.append(a, b)
 MyList.flatten(c)
 MyList.flatMap(a, (x:Int) => MyList(x, x*x))
 MyList.filter(a, (x:Int) => x % 2 == 0 )
+
+MyList.exists(a, (x: Int) => x == 2)
+MyList.reverse(b)

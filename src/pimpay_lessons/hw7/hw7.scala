@@ -62,8 +62,11 @@ object MyList {
   def filter[A](ls:MyList[A], p: A => Boolean):MyList[A] =
     foldRight(ls, MyList[A])((i, a) => if (p(i)) MyCons(i, a) else a)
 
-  def exists[A](ls:MyList[A], p: A => Boolean):Boolean = ???
-  def reverse[A](ls:MyList[A]):MyList[A] = ???
+  def exists[A](ls:MyList[A], p: A => Boolean):Boolean =
+    foldRight(ls, true)((i, r) => r || p(i))
+
+  def reverse[A](ls:MyList[A]):MyList[A] =
+    foldRight(ls, MyList[A])((i, a) => append(a, MyList(i)))
 
 }
 
