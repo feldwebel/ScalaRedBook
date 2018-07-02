@@ -1,5 +1,3 @@
-package pimpay_lessons.hw7
-
 sealed trait MyList[+A]
 
 case object MyNil extends MyList[Nothing]
@@ -28,11 +26,17 @@ object MyList {
     case MyNil => z
   }
 
+  def foldLeft[A, B](l:MyList[A], z: B)(f: (A, B) => B): B = l match {
+    case MyCons(h, t) => foldLeft(t, f(h, z))(f)
+    case MyNil => z
+  }
+
   def dropWhile[A](l: MyList[A], p: A => Boolean): MyList[A] =
     foldRight(l, MyList[A])((i, a) => if (p(i)) a else MyCons(i, a))
 
-  def drop[A](l: MyList[A], n: Int): MyList[A] = { //if (n == 0) l else drop(t, n-1)
-    dropWhile(l, (i:A) => n - 1 == 0)
+  def drop[A](l: MyList[A], n: Int): MyList[A] = l match { //if (n == 0) l else drop(t, n-1)
+    case MyCons(h, t) => if (n == 0) l else drop(t, n-1)
+    case MyNil => MyNil
   }
 
   def sum(l: MyList[Int]): Int = {
@@ -68,7 +72,47 @@ object MyList {
   def reverse[A](ls:MyList[A]):MyList[A] =
     foldRight(ls, MyList[A])((i, a) => append(a, MyList(i)))
 
+  def hasSubsequence[A](haystack:MyList[A], needle:MyList[A]):Boolean = {
+    val origNeedle = needle
+
+    @annotation.tailrec
+    def subSeq(sup: MyList[A], sub: MyList[A]): Boolean = (sup, sub) match {
+        case (_, MyNil) => true
+        case (MyCons(h1, t1), MyCons(h2, t2)) if h1 == h2 => subSeq(t1, t2)
+        case (MyCons(h1, t1), MyCons(h2, t2)) if h1 != h2 && h2 == MyList.head(origNeedle) => subSeq(t1, origNeedle)
+        case (MyCons(h1, t1), MyCons(h2, t2)) if h1 != h2 && h2 != MyList.head(origNeedle) => subSeq(sup, origNeedle)
+        case _ => false
+      }
+
+    subSeq(haystack, needle)
+  }
+
 }
 
 
+val a = MyList(1, 2, 3, 4)
+val b = MyList(9, 8, 7, 6)
+val c = MyList(a, b)
+MyList.head(a)
+MyList.dropWhile(a, (x:Int) => x < 3)
+//MyList.drop(a, 3)
+MyList.map(a, (i:Int) => i * 2)
 
+MyList.append(a, b)
+MyList.flatten(c)
+MyList.flatMap(a, (x:Int) => MyList(x, x*x))
+MyList.filter(a, (x:Int) => x % 2 == 0 )
+
+MyList.exists(a, (x: Int) => x == 2)
+MyList.reverse(b)
+
+val haystack = MyList(1,2,3,4,5)
+
+
+MyList.hasSubsequence(haystack, MyList(1,2,3,4,5))
+MyList.hasSubsequence(haystack, MyList(2,3,4))
+MyList.hasSubsequence(haystack, MyList(3,4,5))
+
+MyList.hasSubsequence(haystack, MyList(2,3,5))
+MyList.hasSubsequence(haystack, MyList(1,3,2))
+MyList.hasSubsequence(haystack, MyList(1,2,3,4,5,6))
