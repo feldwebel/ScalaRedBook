@@ -32,11 +32,11 @@ object MyList {
   }
 
   def dropWhile[A](l: MyList[A], p: A => Boolean): MyList[A] =
-    foldRight(l, MyList[A])((i, a) => if (p(i)) a else MyCons(i, a))
+    foldRight(l, MyList[A])((i, a) => if (p(i)) a else append(MyList(i), a))
 
-  def drop[A](l: MyList[A], n: Int): MyList[A] = l match { //if (n == 0) l else drop(t, n-1)
-    case MyCons(h, t) => if (n == 0) l else drop(t, n-1)
-    case MyNil => MyNil
+  def drop[A](l: MyList[A], n: Int): MyList[A] = {
+    var z = n
+    dropWhile(l, (i: A) => {z = z - 1; z >= 0})
   }
 
   def sum(l: MyList[Int]): Int = {
@@ -93,9 +93,12 @@ object MyList {
 val a = MyList(1, 2, 3, 4)
 val b = MyList(9, 8, 7, 6)
 val c = MyList(a, b)
+val d = MyList(10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
 MyList.head(a)
 MyList.dropWhile(a, (x:Int) => x < 3)
-//MyList.drop(a, 3)
+MyList.dropWhile(d, (x: Int) => x < 14)
+MyList.drop(a, 3)
+MyList.drop(a, 1)
 MyList.map(a, (i:Int) => i * 2)
 
 MyList.append(a, b)
