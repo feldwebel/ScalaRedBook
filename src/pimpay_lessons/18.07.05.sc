@@ -30,7 +30,7 @@ case object None extends Option[Nothing]
 def avg(xs:List[Double]):Option[Double] =
   if (xs.isEmpty) None else Some(xs.sum/xs.length)
 
-def variance(xs:List[Double]): Option[Double] =
+  def variance(xs:List[Double]): Option[Double] =
   avg(xs) flatMap (m => avg(xs map(x => math.pow(x - m, 2))))
 
 avg(List(1, 2, 3, 4, 5))
