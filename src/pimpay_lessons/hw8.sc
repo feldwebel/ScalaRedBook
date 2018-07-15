@@ -32,7 +32,7 @@ object MyEither {
     } catch {case e: Exception => Left(e)}
   }
 
-  def sequence[E,A](xs:List[Either[E,A]]):Either[E, List[A]] = ???
+  def sequence[E,A](xs:List[Either[E,A]]):Either[E, List[A]] = traverse(xs)(x => x)
   def traverse[E,A,B](xs:List[A])(f: A => Either[E,B]):Either[E, List[B]] =
     xs.foldRight[Either[E, List[B]]](Right(List()))((i:B, a:List[B]) => for {ii <- i; aa <- a} yield aa :+ ii)
 
