@@ -131,5 +131,31 @@ object lessDEADBEAF {
     map2(ra, rb)((_, _))
 
   randPair(rng1) == randomPair(rng1)
-  
+
+  def sequence[A](l:List[Rand[A]]): Rand[List[A]] =
+    l.foldRight(unit(List.empty[A]))((i, a) => map2(a, i)(_ :+ _))
+
+  //val s = sequence(List.fill(5)(int))(SimpleRNG)
+
+  def intWithinRange(from: Int, to:Int): Rand[Int] = {
+    map(doubleViaMap)(i => from + (i * (to - from)).toInt)
   }
+
+  def letter: Rand[String] = map(intWithinRange(97, 122))(_.toChar.toString)
+
+  def shortStr(n: Int = 5): Rand[String] =
+    map(sequence(List.fill(n)(letter)))(lc => lc.mkString(""))
+
+
+  val c = letter(SimpleRNG(1488))
+
+shortStr(10)(rng1)
+
+  def randMap[K,V](k: Rand[K], v: Rand[V], l:Int = 5): Rand[Map[K,V]] =
+    map(sequence(List.fill(l)(product(k, v))))(_.toMap)
+
+  randMap(shortStr(5), double)(rng1)
+
+  shortStr()(rng1)
+  
+}
