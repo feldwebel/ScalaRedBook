@@ -156,6 +156,24 @@ shortStr(10)(rng1)
 
   randMap(shortStr(5), double)(rng1)
 
-  shortStr()(rng1)
-  
+  /*def shortStr2(maxLength: Int = 255): Rand[String] = {
+    val x = map(
+      map(nonNegativeIntViaMap)(_ % maxLength)
+    )(n => shortStr(n))
+  }*/
+
+  def shortStr3(maxLenght: Int = 255): Rand[String] =
+    rng => {
+      val (i, rng1) = intWithinRange(1, maxLenght)(rng)
+      shortStr(i)(rng1)
+    }
+  val ooo = shortStr3(127)(rng1)
+  randMap(shortStr3(10), double)(rng1)
+
+  def flatMap[A, B](r: Rand[A])(f:A => Rand[B]): Rand[B] =
+    rng => {
+      val (i, rng1) = r(rng)
+      f(i)(rng1)
+    }
+
 }
