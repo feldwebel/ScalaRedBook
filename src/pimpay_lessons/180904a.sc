@@ -77,9 +77,9 @@ object lesson180904a {
   */
 
 
-  def simulateMachine(inputs: List[Input], m: Machine)/*: State[Machine, (Int, Int)] */= {
+  def simulateMachine(inputs: List[Input], m: Machine): State[Machine, (Int, Int)] = {
     val result = inputs.foldRight(m)((s, acc) => CandyMachine.work(m, s))
-    
+    State.unit((m.coins, m.candies))
   }
 
 
@@ -88,6 +88,6 @@ object lesson180904a {
   val uuu = CandyMachine.work(mach, Coin)
   val in = List(Coin, Turn, Coin, Turn, Coin, Turn, Coin, Turn)
 
-  simulateMachine(in, mach)
+  val fff = simulateMachine(in, mach)
 
 }
