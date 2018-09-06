@@ -56,6 +56,15 @@ object lesson180904a {
   // состояние:
   case class Machine(locked: Boolean, candies: Int, coins: Int)
 
+  object CandyMachine {
+    def work(m: Machine, i: Input): Machine = (m, i) match {
+      case (Machine(_, 0, _), _) => m
+      case (Machine(true, _, _), Turn) => m
+      case (Machine(_, candy, coin), Coin) => Machine(false, candy, coin + 1)
+      case (Machine(false, candy, coin), Turn) => Machine(true, candy - 1, coin )
+    }
+  }
+
   /*
   Правила работы машины:
     * Вставка монеты в заблокированный автомат, вызовет его разблокировку, при условии наличия конфет
@@ -66,6 +75,19 @@ object lesson180904a {
   Метод simulateMachine должен применить действия к заданному автомату и вернуть количество монет и конфет, оставшихся в автомате. Например, имея автомат, в котором 10 монет и 5 конфет, с помощью которого успешно "купили"
   4 конфеты, мы должны получить (14,1).
   */
-  def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = ???
+
+
+  def simulateMachine(inputs: List[Input], m: Machine)/*: State[Machine, (Int, Int)] */= {
+    val result = inputs.foldRight(m)((s, acc) => CandyMachine.work(m, s))
+    
+  }
+
+
+  val mach = Machine(false, 10, 0)
+
+  val uuu = CandyMachine.work(mach, Coin)
+  val in = List(Coin, Turn, Coin, Turn, Coin, Turn, Coin, Turn)
+
+  simulateMachine(in, mach)
 
 }

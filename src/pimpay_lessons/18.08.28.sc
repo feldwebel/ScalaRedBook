@@ -135,7 +135,7 @@ object lessDEADBEAF {
   def sequence[A](l:List[Rand[A]]): Rand[List[A]] =
     l.foldRight(unit(List.empty[A]))((i, a) => map2(a, i)(_ :+ _))
 
-  //val s = sequence(List.fill(5)(int))(SimpleRNG)
+  val s = sequence(List.fill(5)(int))(rng1)
 
   def intWithinRange(from: Int, to:Int): Rand[Int] = {
     map(doubleViaMap)(i => from + (i * (to - from)).toInt)
