@@ -21,6 +21,7 @@ object lesson180904a {
 
   object State {
     def unit[S,A](a:A):State[S,A] = State(s => (a, s))
+
     def sequence[S,A](l:List[State[S, A]]): State[S, List[A]] =
       l.foldRight(unit[S, List[A]](List.empty[A]))((i, a) => map2(a, i)(_ :+ _))
 
@@ -31,7 +32,9 @@ object lesson180904a {
       } yield f(a, b)
 
     def get[S]: State[S,S] = State(s => (s, s))
+
     def set[S](s:S): State[S, Unit] = State(_ => ((), s))
+
     def modify[S](f:S => S): State[S, Unit] = for {
       s <- get
       _ <- set(f(s))
@@ -54,9 +57,8 @@ object lesson180904a {
   case object Turn extends Input
 
   // состояние:
-  case class Machine(locked: Boolean, candies: Int, coins: Int)
+  case class Machine(locked: Boolean, candies: Int, coins: Int) {
 
-  object CandyMachine {
     def work(m: Machine, i: Input): Machine = (m, i) match {
       case (Machine(_, 0, _), _) => m
       case (Machine(true, _, _), Turn) => m
@@ -77,17 +79,28 @@ object lesson180904a {
   */
 
 
-  def simulateMachine(inputs: List[Input], m: Machine): State[Machine, (Int, Int)] = {
-    val result = inputs.foldRight(m)((s, acc) => CandyMachine.work(m, s))
-    State.unit((m.coins, m.candies))
+  def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = {
+    val transitions = inputs.map(i => State.modify[Machine](m => m.work(m, i)))
+
+    val seq = State.sequence(transitions)
+
+    for {
+      _ <- seq
+      s <- State.get
+    } yield(s.coins, s.candies)
+
+    /*val result = inputs.foldRight(m)((s, acc) => CandyMachine.work(m, s))
+    State.unit((m.coins, m.candies))*/
+    //inputs.map(i => State.modify(_ => CandyMachine.work(m, i)))
   }
 
+  val mach = Machine(false, 5, 10)
 
-  val mach = Machine(false, 10, 0)
-
-  val uuu = CandyMachine.work(mach, Coin)
   val in = List(Coin, Turn, Coin, Turn, Coin, Turn, Coin, Turn)
 
-  val fff = simulateMachine(in, mach)
+
+  val fff = simulateMachine(in)
+  fff.run(mach)
+
 
 }
