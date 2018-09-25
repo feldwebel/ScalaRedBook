@@ -20,7 +20,7 @@ import scala.concurrent.{Await, ExecutionContext, Future}
         fa.flatMap(a => fb.map(b => f(a,b))(ec))(ec)
     }
 
-    def fork[A](pa: => Par[A]): Par[A] = ec => pa(ec) //???
+    def fork[A](pa: => Par[A]): Par[A] = ec => Future.apply(pa(ec))(ec).flatten //???
 
     def run[A](pa: Par[A])(ec: ExecutionContext): A = {
       val f = pa(ec)
