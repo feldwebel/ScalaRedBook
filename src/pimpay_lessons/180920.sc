@@ -58,17 +58,17 @@ import scala.concurrent.{Await, ExecutionContext, Future}
     def chooseN2[A](pn: Par[Int])(choices: List[Par[A]]): Par[A] =
       chooseMap(pn)(choices.zipWithIndex.map(_.swap).toMap)
 
-    def chooser[A, B](pa: Par[A])(f: A => Par[B]): Par[B] = //flatMap
+    def flatMap[A, B](pa: Par[A])(f: A => Par[B]): Par[B] = //flatMap
       ec => f(run(pa)(ec))(ec)
 
     def chooseMap2[K,V](pk:Par[K])(map: Map[K, Par[V]]): Par[V] =
-      chooser(pk)(a => map(a))
+      flatMap(pk)(a => map(a))
 
     def chooseN3[A](pn: Par[Int])(choices: List[Par[A]]): Par[A] =
-      chooser(pn)(a => choices(a))
+      flatMap(pn)(a => choices(a))
 
     def choose4[A](cond: Par[Boolean])(t: => Par[A], f: => Par[A]):Par[A] =
-      chooser(cond)(c => if (c) t else f)
+      flatMap(cond)(c => if (c) t else f)
 
 /*    Дз
     1) через unit + flatMap (не меняем fork, run)
@@ -77,6 +77,11 @@ import scala.concurrent.{Await, ExecutionContext, Future}
     def join[A](ppa:Par[Par[A]]):Par[A] = ???
     через unit и flatMap*/
 
+    def join[A](ppa: Par[Par[A]]): Par[A] =
+      flatMap(ppa)(a => a)
+
+    def mapViaFlatMap[A,B](pa: Par[A])(f: A => B): Par[B] =
+      flatMap(pa)(a => unit(f(a)))
 
     def run[A](pa: Par[A])(ec: ExecutionContext): A = {
       val f = pa(ec)
