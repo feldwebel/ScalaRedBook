@@ -83,11 +83,30 @@ import scala.concurrent.{Await, ExecutionContext, Future}
     def mapViaFlatMap[A,B](pa: Par[A])(f: A => B): Par[B] =
       flatMap(pa)(a => unit(f(a)))
 
+    def map2ViaFlatMap[A,B,C](pa:Par[A], pb: Par[B])(f: (A,B) => C): Par[C] =
+      flatMap(pa)(a => map(pb)(b => f(a, b)))
+
+    implicit class ParOps[A](pa: Par[A]) /*(pa: ExecutionContext => Future[A])*/ {
+      def map[B](f: A => B): Par[B] =
+        Par.map(pa)(f)
+
+      def flatMap[B](f: A => Par[B]): Par[B] =
+        Par.flatMap(pa)(f)
+    }
+
+    def map2ViaFor[A,B,C](pa:Par[A], pb: Par[B])(f: (A,B) => C): Par[C] =
+      for {
+        a <- pa
+        b <- pb
+      } yield f(a, b)
+
     def run[A](pa: Par[A])(ec: ExecutionContext): A = {
       val f = pa(ec)
       Await.result(f, Duration.Inf)
     }
   }
+
+/*задача о 8 ферзях перебором параметризировать по сетке*/
 
   def sum(ints:IndexedSeq[Int]):Par[Int] = {
     if (ints.size <= 1) Par.unit(ints.headOption getOrElse 0)
