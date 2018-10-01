@@ -49,4 +49,9 @@ object Par{
   }
 }
 
-def queens(n: Int): 
+case class Position(x: Int, y: Int) {
+  def isWrong(pos: Position): Boolean =
+    pos.x == x || pos.y == y || (pos.x - x).abs == (pos.y - y).abs
+}
+
+def queens(n: Int):List[Position]
