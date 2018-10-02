@@ -54,4 +54,13 @@ case class Position(x: Int, y: Int) {
     pos.x == x || pos.y == y || (pos.x - x).abs == (pos.y - y).abs
 }
 
+case class Board(n: Int) {
+  val b: List[Position]
+  def isCorrect(pos: Position): Boolean = b.forall(!pos.isWrong(_))
+  def addQueen(pos: Position): Boolean =
+    if (b.length < n && isCorrect(pos)) {
+      b 
+    }
+}
+
 def queens(n: Int):List[Position]
