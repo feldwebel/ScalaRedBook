@@ -49,18 +49,33 @@ object Par{
   }
 }
 
+
 case class Position(x: Int, y: Int) {
   def isWrong(pos: Position): Boolean =
     pos.x == x || pos.y == y || (pos.x - x).abs == (pos.y - y).abs
+
+  def isOk(board: Board): Boolean =
+    board.forall(p => !isWrong(p))
 }
 
-case class Board(n: Int) {
-  val b: List[Position]
-  def isCorrect(pos: Position): Boolean = b.forall(!pos.isWrong(_))
-  def addQueen(pos: Position): Boolean =
-    if (b.length < n && isCorrect(pos)) {
-      b 
-    }
+case class Board(board: List[Position]) {
+
 }
 
-def queens(n: Int):List[Position]
+
+def queens(n: Int): Board = {
+  def placeQueens(k: Int): Board =
+    if (k == 0)
+      List.empty(Board)
+    else
+      for {
+        board <- placeQueens(k - 1)
+        column <- 1 to n
+        queen = Position(k, column)
+        if queen.isOk(board)
+      } yield queen :: board
+
+  placeQueens(n)
+}
+
+queens(5)
