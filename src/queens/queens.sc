@@ -1,3 +1,4 @@
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.Duration
 
@@ -51,22 +52,38 @@ object Par{
 
 
 case class Position(x: Int, y: Int) {
-  def isWrong(pos: Position): Boolean =
-    pos.x == x || pos.y == y || (pos.x - x).abs == (pos.y - y).abs
-
-  def isOk(board: Board): Boolean =
-    board.forall(p => !isWrong(p))
+  def isOk(p: Position): Boolean =
+    p.x != x || p.y != y || (p.x - x).abs != (p.y - y).abs
 }
 
-case class Board(board: List[Position]) {
+type Board = List[Position]
 
+
+
+/*case class Board() {
+  var board = ArrayBuffer.empty[Position]
+  def isCorrect(p1: Position): Boolean =
+    board.forall(_.isOk(p1))
+
+  def add(p: Position) =
+    if (isCorrect(p)) board+=p else board
+}*/
+
+def setQueens(n: Int): Board = {
+  def placeQueens
+
+  if (n > 3) {
+
+  } else {
+    List.empty[Position]
+  }
 }
 
 
-def queens(n: Int): Board = {
-  def placeQueens(k: Int): Board =
+def queens(n: Int): List[Position] = {
+  def placeQueens(k: Int): List[Position] =
     if (k == 0)
-      List.empty(Board)
+      List.empty[Position]
     else
       for {
         board <- placeQueens(k - 1)
