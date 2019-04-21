@@ -54,7 +54,8 @@ object MyEither {
 
   def sequence[E,A](xs:List[Either[E,A]]):Either[E, List[A]] = traverse(xs)(identity)
   def traverse[E,A,B](xs:List[A])(f: A => Either[E,B]):Either[E, List[B]] =
-    xs.foldRight[Either[E, List[B]]](Right(List()))((i:A, a:Either[E,List[B]]) => for {ii <- f(i); aa <- a} yield aa :+ ii)
+    xs.foldRight[Either[E, List[B]]](Right(List()))((i:A, a:Either[E,List[B]]) =>
+      for {ii <- f(i); aa <- a} yield aa :+ ii)
 
   "bad argument".asLeft[Int]
   123.asRight[Exception]
