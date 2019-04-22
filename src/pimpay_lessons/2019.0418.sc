@@ -1,0 +1,73 @@
+// Lazy List -- Stream
+
+sealed trait Stream[+A]
+
+case class SCons[A](h: () => A, t: () => Stream[A]) extends Stream[A]
+case object SNil extends Stream[Nothing]
+
+object Stream{
+  def cons[A](h: => A, t: => Stream[A]): Stream[A] = {
+    lazy val hh = h
+    lazy val tt = t
+    SCons ( () => hh, () => tt)
+  }
+  def nil = SNil
+  def empty[A]: Stream[A] = SNil
+
+  def toList[A](s: Stream[A]): List[A] = s match {
+    case SCons(h,t) => h() +: toList(t())
+    case SNil => Nil
+  }
+
+  /*def headOption[A](s:Stream[A]): Option[A] = s match {
+    case SCons(h, _) => Option(h())
+    case _ => None
+  }
+
+  def take[A](s: Stream[A], n: Int): Stream[A] = s match {
+    case SCons(h, t) if n > 0 => cons(h(), take(t(), n - 1))
+    case _ => SNil
+  }
+
+  def exitst[A](s: Stream[A])(p: A => Boolean): Boolean = foldRight(s, false)((el, acc) => p(el) || acc)
+  */
+  def foldRight[A, B](s: Stream[A], z:B )(f: (A, =>B) => B): B = s match {
+    case SCons(h,t) => f(h(), foldRight(t(), z)(f))
+    case SNil => z
+  }
+
+
+  def headOption[A](s:Stream[A]): Option[A] =
+    foldRight(s, Option.empty[A])((el, _) => Option(el))
+
+  def take[A](s:Stream[A], n:Int):Stream[A] =
+    foldRight(s, Stream.empty[A])((el, acc) => if (n == 0) acc else cons(el, take(acc, n-1)))
+  def exists[A](s:Stream[A])(p: A => Boolean):Boolean =
+    foldRight(s, false)((el,acc) => p(el) || acc)
+  def filter[A](s:Stream[A])(p: A => Boolean): Stream[A] =
+    foldRight(s, Stream.empty[A])((el, acc) => if (p(el)) cons(el, acc) else acc)
+  def map[A,B](s:Stream[A])(f: A => B):Stream[B] =
+    foldRight(s, Stream.empty[B])((el, acc) => cons(f(el), acc) )
+
+  def forall[A](s:Stream[A])(p: A => Boolean):Boolean =
+    foldRight(s, true)((el, acc) => if (!p(el)) false else acc )
+
+  def findFirst[A](s:Stream[A])(p: A => Boolean):Option[A] =
+    foldRight(s, Option.empty[A])((el, acc) => if (p(el)) Option(el) else acc)
+}
+
+def test[A] (n:A)= {println("calcing " + n); n}
+
+import Stream._
+val s= cons(1, cons(2, cons(3, nil)))
+val ss = cons(test(1), cons(test(2), cons(test(3), nil)))
+
+toList(s)
+headOption(s)
+take(s, 2)
+foldRight(s, 0)(_+_)
+exists(s)(_ >100)
+filter(s)(_ % 2 != 0)
+toList(map(s)(_ * 2))
+forall(s)(_ < 3)
+findFirst(s)(_ == 8)
