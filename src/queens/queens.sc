@@ -80,10 +80,10 @@ def setQueens(n: Int): Board = {
 }
 
 
-def queens(n: Int): List[Position] = {
-  def placeQueens(k: Int): List[Position] =
+def queens(n: Int): List[Board] = {
+  def placeQueens(k: Int): List[Board] =
     if (k == 0)
-      List.empty[Position]
+      List(List())
     else
       for {
         board <- placeQueens(k - 1)
