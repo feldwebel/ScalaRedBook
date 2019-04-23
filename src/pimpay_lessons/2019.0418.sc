@@ -59,13 +59,14 @@ object Stream{
     foldRight(s, Option.empty[A])((el, acc) => if (p(el)) Option(el) else acc)
   //headOption(filter(s)(p))
 
-  def takeWhile[A](s: Stream[A])(p: A => Boolean): Stream[A] = ???
+  def takeWhile[A](s: Stream[A])(p: A => Boolean): Stream[A] =
+    foldRight(s, Stream.empty[A])((el, acc) => if (p(el)) cons(el, acc) else nil)
 }
 
 def test[A] (n:A)= {println("calcing " + n); n}
 
 import Stream._
-val s= cons(1, cons(2, cons(3, nil)))
+val s= cons(1, cons(2, cons(3, cons(4, nil))))
 val ss = cons(test(1), cons(test(2), cons(test(3), cons(test(4), nil))))
 
 toList(s)
@@ -78,6 +79,9 @@ filter(ss)(_ < 4)
 toList(map(s)(_ * 2))
 forall(s)(_ < 3)
 findFirst(s)(_ == 8)
+
+val o = takeWhile(s)(_ < 3)
+toList(o)
 
 val a = map(ss)(_ * 10)
 val b = map(a)(_ * 5)
