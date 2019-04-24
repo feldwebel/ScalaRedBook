@@ -105,8 +105,6 @@ def zip[A, B](a: Stream[A], b: Stream[B]): Stream[(A, B)] = (a, b) match {
 val s1 = cons("A", cons("B", cons("C", cons("D", nil))))
 
 def take2[A](s: Stream[A], n: Int): Stream[A] =
-  takeWhile(s)(u => zip(u, start(0)))
-  //takeWhile(map(zip(s, start(0)))(t => t._1))(u => {println(u); true})
-
+  map(takeWhile(zip(s, start(0)))(_._2 < n))(_._1)
 
 toList(take2(s1, 3))
