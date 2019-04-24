@@ -87,3 +87,26 @@ val a = map(ss)(_ * 10)
 val b = map(a)(_ * 5)
 val c = take(b, 1)
 c.toString
+
+val ones: Stream[Int] = cons(test(1), ones)
+toList(take(ones, 10))
+
+def constant(n: Int): Stream[Int] = cons(n, constant(n))
+toList(take(constant(9), 10))
+
+def start(n: Int): Stream[Int] = cons(n, start(n+1))
+
+def zip[A, B](a: Stream[A], b: Stream[B]): Stream[(A, B)] = (a, b) match {
+  case (SCons(ah, at), SCons(bh, bt)) => cons(ah() -> bh(), zip(at(), bt()))
+  case _ => nil
+}
+
+
+val s1 = cons("A", cons("B", cons("C", cons("D", nil))))
+
+def take2[A](s: Stream[A], n: Int): Stream[A] =
+  takeWhile(s)(u => zip(u, start(0)))
+  //takeWhile(map(zip(s, start(0)))(t => t._1))(u => {println(u); true})
+
+
+toList(take2(s1, 3))
