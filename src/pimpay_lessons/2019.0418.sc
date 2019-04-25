@@ -52,8 +52,29 @@ object Stream{
 
   def filter[A](s:Stream[A])(p: A => Boolean): Stream[A] =
     foldRight(s, Stream.empty[A])((el, acc) => if (p(el)) cons(el, acc) else acc)
+
+
   def map[A,B](s:Stream[A])(f: A => B):Stream[B] =
     foldRight(s, Stream.empty[B])((el, acc) => cons(f(el), acc) )
+
+  def mapAccum[A, B, S](s: Stream[A], z: S)(f: (A, S) => (B, S)): Stream[B] = {
+    var state = z
+    foldRight(s, Stream.empty[B])((el, acc) => {
+      val (b, nextState) = f(el, state)
+      state = nextState
+      cons(b, acc)
+    })
+  }
+
+  def zipWithIndex[A](s: Stream[A]): Stream[(A, Int)] = zip(s, start(0))
+
+  def zipWithIndex1[A](s: Stream[A]): Stream[(A, Int)] = ???
+    mapAccum(s, 0)()
+
+  //takeWhile via mapAccum
+  //zipwithindex via mapAccum
+
+
 
   def findFirst[A](s:Stream[A])(p: A => Boolean):Option[A] =
     foldRight(s, Option.empty[A])((el, acc) => if (p(el)) Option(el) else acc)
@@ -61,6 +82,13 @@ object Stream{
 
   def takeWhile[A](s: Stream[A])(p: A => Boolean): Stream[A] =
     foldRight(s, Stream.empty[A])((el, acc) => if (p(el)) cons(el, acc) else nil)
+
+  def start(n: Int): Stream[Int] = cons(n, start(n+1))
+
+  def zip[A, B](a: Stream[A], b: Stream[B]): Stream[(A, B)] = (a, b) match {
+    case (SCons(ah, at), SCons(bh, bt)) => cons(ah() -> bh(), zip(at(), bt()))
+    case _ => nil
+  }
 }
 
 def test[A] (n:A)= {println("calcing " + n); n}
@@ -94,17 +122,10 @@ toList(take(ones, 10))
 def constant(n: Int): Stream[Int] = cons(n, constant(n))
 toList(take(constant(9), 10))
 
-def start(n: Int): Stream[Int] = cons(n, start(n+1))
-
-def zip[A, B](a: Stream[A], b: Stream[B]): Stream[(A, B)] = (a, b) match {
-  case (SCons(ah, at), SCons(bh, bt)) => cons(ah() -> bh(), zip(at(), bt()))
-  case _ => nil
-}
-
 
 val s1 = cons("A", cons("B", cons("C", cons("D", nil))))
 
 def take2[A](s: Stream[A], n: Int): Stream[A] =
-  map(takeWhile(zip(s, start(0)))(_._2 < n))(_._1)
+  map(takeWhile(zipWithIndex(s))(_._2 < n))(_._1)
 
 toList(take2(s1, 3))
