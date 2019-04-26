@@ -68,12 +68,8 @@ object Stream{
 
   def zipWithIndex[A](s: Stream[A]): Stream[(A, Int)] = zip(s, start(0))
 
-  def zipWithIndex1[A](s: Stream[A]): Stream[(A, Int)] = ???
-    mapAccum(s, 0)()
-
-  //takeWhile via mapAccum
-  //zipwithindex via mapAccum
-
+  def zipWithIndex1[A](s: Stream[A]): Stream[(A, Int)] =
+    mapAccum(s, 0)((a, idx) => (a->idx, idx + 1))
 
 
   def findFirst[A](s:Stream[A])(p: A => Boolean):Option[A] =
@@ -89,12 +85,43 @@ object Stream{
     case (SCons(ah, at), SCons(bh, bt)) => cons(ah() -> bh(), zip(at(), bt()))
     case _ => nil
   }
+
+  def zipWith[A, B, C](a: Stream[A], b: Stream[B])(f: (A, B) => C): Stream[C] =
+    map(zip(a,b))(f.tupled)
+
+  def zipWith1[A, B, C](a: Stream[A], b: Stream[B])(f: (A, B) => C): Stream[C] =
+    unfold()
+
+  //hasSubsequence
+
+  def take2[A](s: Stream[A], n: Int): Stream[A] =
+    map(takeWhile(zipWithIndex(s))(_._2 < n))(_._1)
+
+  def take3[A](s: Stream[A], n: Int): Stream[A] =
+    map(takeWhile(zipWithIndex1(s))(_._2 < n))(_._1)
+
+  def unfold[A, S](z:S)(f: S => Option[(A, S)]): Stream[A] = f(z) match {
+    case None => nil
+    case Some((a, s)) => cons(a, unfold(s)(f))
+  }
+
+  def constant1(n: Int): Stream[Int] = unfold(n)(s => Option(s, s))
+
+  def start1(n: Int): Stream[Int] = unfold(n)(s => Option(s, s +1))
+
+  def fibs1: Stream[Int] = unfold(0 -> 1) (case (a,b) => Option(a, (b, a+b))
+
+  def map1[A,B](s:Stream[A])(f: A => B):Stream[B] =
+    unfold(s)({
+      case (h,t) => Some(f(h()), t())
+      case _ => None
+    })
 }
 
 def test[A] (n:A)= {println("calcing " + n); n}
 
 import Stream._
-val s= cons(1, cons(2, cons(3, cons(4, nil))))
+val s = cons(1, cons(2, cons(3, cons(4, nil))))
 val ss = cons(test(1), cons(test(2), cons(test(3), cons(test(4), nil))))
 
 toList(s)
@@ -125,7 +152,12 @@ toList(take(constant(9), 10))
 
 val s1 = cons("A", cons("B", cons("C", cons("D", nil))))
 
-def take2[A](s: Stream[A], n: Int): Stream[A] =
-  map(takeWhile(zipWithIndex(s))(_._2 < n))(_._1)
-
 toList(take2(s1, 3))
+
+def fibs: Stream[Int] = {
+  def loop(a: Int, b: Int): Stream[Int] = cons(a, loop(b, a+b))
+  loop(0, 1)
+}
+
+toList(take(fibs, 10))
+
