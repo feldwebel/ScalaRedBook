@@ -89,7 +89,7 @@ object MyChapter5 {
     }
 
     def startsWith[A](s: Stream[A]): Boolean =
-      zipAll(s).takeWhile(!_._2.isEmpty) forAll {case(h1, h2) => h1 == h2}
+      zipAll(s).takeWhile(_._2.isDefined) forAll {case(h1, h2) => h1 == h2}
 
     def tails: Stream[Stream[A]] = unfold(this) {
       case Empty => None
