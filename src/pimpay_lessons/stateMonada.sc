@@ -122,9 +122,44 @@ def fixedStr(l:Int):Rand[String] = sequence(List.fill(l)(char)) map (_.mkString)
 def listOf[A](ra:Rand[A], n:Int): Rand[List[A]] = sequence(List.fill(n)(ra))
 def fixed(l:Int):Rand[String] = listOf(char,l) map (_.mkString)
 
-val zzz =fixedStr(66)(rng)
+val zzz = fixedStr(66)(rng)
 
 
-def shortStr(min:Int =2, max: Int = 15): Rand[String] = ??? // map.combine/sequence
+//def shortStr(min:Int =2, max: Int = 15): Rand[String] = rng => {
+//  val (l, rng2) = range(min, max)(rng)
+//  fixedStr(l)(rng2)
+//}// map.combine/sequence
 //строка  случайной длины в пределах
+
+
+def flatMap[A, B](ra: Rand[A])(f:A => Rand[B]): Rand[B] = rng => {
+  val (l, rng2) = ra(rng)
+  f(l)(rng2)
+}
+
+def shortStr(min:Int = 2, max:Int = 15):Rand[String] = for {
+  l <- range(min, max)
+  s <- fixedStr(l)
+} yield s
+
+//def shortStr1(min:Int =2, max: Int = 15): Rand[String] = flatMap(range(min, max))(fixedStr)
+/*def shortStr2(min:Int =2, max: Int = 15): Rand[String] = for {
+  l <- range(min, max)
+  s <- fixedStr(l)
+} yield s*/
+
+//val zzz2 = shortStr1()(rng)
+//val zzz3 = shortStr2()(rng)
+
+//def flatten[A](rra:Rand[Rand[A]]): Rand[A] =
+
+def assoc[K, V](rk: Rand[K], rv: Rand[V], rn: Rand[Int] = range(2, 10)): Rand[Map[K,V]] =
+  for {
+    n <- rn
+    t <- listOf(tuplize(rk, rv), n)
+  } yield t.toMap
+
+    assoc(shortStr(), point)(rng)
+
+
 
