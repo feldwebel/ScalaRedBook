@@ -4,7 +4,7 @@ case class State[S,+A](run: S => (A,S)) {
       val (a, s1) = run(s)
       f(a) run s1
   })
-  def combine[B,C](sb: State[S, B]): State[S,C] = ???
+  def combine[B,C](sb: State[S, B])(f:(A, B) => C): State[S,C] = flatMap(a => sb.map(b => f(a, b)))
 }
 
 object State {
