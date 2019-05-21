@@ -1,14 +1,26 @@
 case class State[S,+A](run: S => (A,S)) {
-  def map[B]
-  def flatMap[B]
-  def combine[B,C]
+  def map[B](f:A => B): State[S,B] = flatMap(a => State.unit(f(a)))
+  def flatMap[B](f:A => State[S,B]):State[S,B] = State(s => {
+      val (a, s1) = run(s)
+      f(a) run s1
+  })
+  def combine[B,C](sb: State[S, B]): State[S,C] = ???
 }
 
 object State {
-  def unit[A]
-  def sequence[A]
-  def traverse[A,B]
-  def combine[A,B,C]
+  def unit[S,A](a:A):State[S,A] = State(s => (a, s))
+
+  def sequence[S,A](l:List[State[S, A]]): State[S, List[A]] =
+    l.foldRight(unit[S, List[A]](List.empty[A]))((el, acc) => combine(el, acc)(_ +: _))
+
+  def traverse[S,A,B](l: List[A])(f: A => State[S,B]): State[S, List[B]] =
+    l.foldRight(unit[S, List[A]](List.empty[A]))((el, acc) => combine(f(el), acc)(_ +: _))
+
+  def combine[S,A,B,C](ra:State[S,A], rb:State[S,B])(f:(A, B) => C): State[S,C] =
+    for {
+      a <- ra
+      b <- rb
+    } yield f(a, b)
 }
 
 object Random {
