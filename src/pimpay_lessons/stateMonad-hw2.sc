@@ -132,16 +132,11 @@ object stateMonadHw2{
     case object Coin extends Input
     case object Turn extends Input
 
-    def sumulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = {
+    def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = {
       import State._
 
-      val transitions =
-        inputs.map((input:Input) => modify((machine:Machine) => machine process input))
-
-      val seq = sequence(transitions)
-
       for {
-        _ <- seq
+        _ <- traverse(inputs)(input => modify((machine:Machine) => machine process input))
         s <- State.get
       } yield(s.coins, s.candies)
     }
@@ -150,7 +145,7 @@ object stateMonadHw2{
     val in = List(Coin, Turn, Coin, Turn, Coin, Turn, Coin, Turn, Turn)
 
 
-    val fff = sumulateMachine(in)
+    val fff = simulateMachine(in)
     val (result, m) = fff.run(mach)
 
     m.candies // 5-4 = 1
