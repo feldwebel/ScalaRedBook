@@ -120,7 +120,7 @@ object stateMonadHw2{
 
     case class Machine(locked:Boolean, candies:Int, coins:Int){
 
-      def work(input: Input): Machine = (this, input) match {
+      def process(input: Input): Machine = (this, input) match {
         case (Machine(_, 0, _), _) => this
         case (Machine(true, _, _), Turn) => this
         case (Machine(_, candy, coin), Coin) => Machine(locked = false, candy, coin + 1)
@@ -132,12 +132,13 @@ object stateMonadHw2{
     case object Coin extends Input
     case object Turn extends Input
 
-    def simpleMachine(inputs: List[Input]): State[Machine, (Int, Int)] = {
+    def sumulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = {
+      import State._
 
       val transitions =
-        inputs.map((input:Input) => State.modify((machine:Machine) => machine.work(input)))
+        inputs.map((input:Input) => modify((machine:Machine) => machine process input))
 
-      val seq = State.sequence(transitions)
+      val seq = sequence(transitions)
 
       for {
         _ <- seq
@@ -149,7 +150,7 @@ object stateMonadHw2{
     val in = List(Coin, Turn, Coin, Turn, Coin, Turn, Coin, Turn, Turn)
 
 
-    val fff = simpleMachine(in)
+    val fff = sumulateMachine(in)
     val (result, m) = fff.run(mach)
 
     m.candies // 5-4 = 1
