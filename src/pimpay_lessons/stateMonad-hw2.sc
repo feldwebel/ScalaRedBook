@@ -120,9 +120,9 @@ object stateMonadHw2{
 
     case class Machine(locked:Boolean, candies:Int, coins:Int){
 
-      def work(machine: Machine, input: Input): Machine = (machine, input) match {
-        case (Machine(_, 0, _), _) => machine
-        case (Machine(true, _, _), Turn) => machine
+      def work(input: Input): Machine = (this, input) match {
+        case (Machine(_, 0, _), _) => this
+        case (Machine(true, _, _), Turn) => this
         case (Machine(_, candy, coin), Coin) => Machine(locked = false, candy, coin + 1)
         case (Machine(false, candy, coin), Turn) => Machine(locked = true, candy - 1, coin )
       }
@@ -135,7 +135,7 @@ object stateMonadHw2{
     def simpleMachine(inputs: List[Input]): State[Machine, (Int, Int)] = {
 
       val transitions =
-        inputs.map((input:Input) => State.modify((machine:Machine) => machine.work(machine, input)))
+        inputs.map((input:Input) => State.modify((machine:Machine) => machine.work(input)))
 
       val seq = State.sequence(transitions)
 
@@ -145,7 +145,7 @@ object stateMonadHw2{
       } yield(s.coins, s.candies)
     }
 
-    val mach = Machine(locked = false, 5, 10)
+    val mach = Machine(locked = false, candies = 5, coins = 10)
     val in = List(Coin, Turn, Coin, Turn, Coin, Turn, Coin, Turn, Turn)
 
 
