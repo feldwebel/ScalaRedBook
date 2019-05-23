@@ -135,6 +135,7 @@ object stateMonadHw2{
     def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = {
       import State._
 
+      //sequence(inputs.map((input:Input) => modify((machine:Machine) => machine process input)))
       for {
         _ <- traverse(inputs)(input => modify((machine:Machine) => machine process input))
         s <- State.get
