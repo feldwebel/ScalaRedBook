@@ -138,7 +138,7 @@ object stateMonadHw2{
       //sequence(inputs.map((input:Input) => modify((machine:Machine) => machine process input)))
       for {
         _ <- traverse(inputs)(input => modify((machine:Machine) => machine process input))
-        s <- State.get
+        s <- get
       } yield(s.coins, s.candies)
     }
 
