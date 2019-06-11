@@ -10,8 +10,9 @@ def long(w:Int):Future[Int] = Future {
 }
 
 val f2 = for {
-  i <- long(5)
-  g <- long(7)
+  //i <- long(5)
+  //g <- long(7
+  (i, g) <- long(5) zip long(7)
 } yield i + g
 
 
