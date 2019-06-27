@@ -39,3 +39,4 @@ Par.run(program)(scala.concurrent.ExecutionContext.global)
 def sleep(n:Int) = Par.lazyUnit({Thread.sleep(n * 1000); n})
 
 val program1 = Par.combine(sleep(5), sleep(5))(_+_)
+Par.run(program1)(scala.concurrent.ExecutionContext.global)
