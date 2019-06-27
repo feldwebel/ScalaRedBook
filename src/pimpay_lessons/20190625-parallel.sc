@@ -5,7 +5,7 @@ import scala.concurrent.duration.Duration
 type Par[A] = ExecutionContext => Future[A]
 
 object Par {
-  def unit[A](a: => A): Par[A] = _ => Future.successful(a)
+  def unit[A](a: => A): Par[A] = ec => Future.successful(a)
   def combine[A, B, C](pa:Par[A], pb: Par[B])(f:(A, B) => C): Par[C] = ec => {
     val fa = pa(ec)
     val fb = pb(ec)
