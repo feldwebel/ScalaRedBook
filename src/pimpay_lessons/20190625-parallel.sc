@@ -31,7 +31,7 @@ object Par {
 
   def parSort(l:Par[List[Int]]): Par[List[Int]] = combine(l, unit())((a, _) => a.sorted)
 
-  def map[A, B](pa:Par[A])(f:A => B): Par[B] = ???   //no ec
+  def map[A, B](pa:Par[A])(f:A => B): Par[B] =  combine(pa, unit())((a, _) => f(a))  //no ec
 
   def parMap[A, B](l:List[A])(f: A => B): Par[List[B]] = ???
 }
