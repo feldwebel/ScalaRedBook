@@ -1,8 +1,13 @@
 import scala.concurrent.{Await, Future, ExecutionContext}
 import scala.concurrent.duration.Duration
+import scala.language.higherKinds
 
 //trait Par[A]
 type Par[A] = ExecutionContext => Future[A]
+
+trait ParEngine[Par[_], Ctx]{
+
+}
 
 object Par {
   def unit[A](a: => A): Par[A] = ec => Future.successful(a)
@@ -30,10 +35,15 @@ object Par {
   def asyncF[A, B](f: A => B): A => Par[B] = a => lazyUnit(f(a))
 
   def parSort(l:Par[List[Int]]): Par[List[Int]] = combine(l, unit())((a, _) => a.sorted)
+  //map(l)(_.sorted)
 
   def map[A, B](pa:Par[A])(f:A => B): Par[B] =  combine(pa, unit())((a, _) => f(a))  //no ec
 
-  def parMap[A, B](l:List[A])(f: A => B): Par[List[B]] = ???
+  def parMap[A,B](l:List[A])(f: A => B):Par[List[B]] = fork { traverse(l)(asyncF(f)) }
+  def traverse[A,B](l:List[A])(f: A => Par[B]):Par[List[B]] = l.foldLeft(unit(List.empty[B]))( (acc, el) => {
+    combine(f(el), acc)(_ :: _)
+  })
+  def sequence[A](l:List[Par[A]]):Par[List[A]] = traverse(l)(identity)
 }
 
 def sum(s:Seq[Int]):Par[Int] = {
