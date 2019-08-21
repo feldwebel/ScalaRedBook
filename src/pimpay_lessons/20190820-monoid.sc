@@ -1,3 +1,7 @@
+import scala.concurrent.{Future, Await}
+import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
+
 trait Semigroup[A] {
   def op(a:A, b:A):A
 }
@@ -45,16 +49,21 @@ List(1,2,3) foldUsing intAdditionMonoid
 //a + (b + (c + d))
 // (a + b) + (c + d)
 
-def spark[A](v:IndexedSeq[A], m:Monoid[A]):A = {
+def spark[A](v:IndexedSeq[A], m:Monoid[A]):Future[A]= {
   v.length match {
-    case 0 => m.z
-    case 1 => v(0)
+    case 0 => Future(m.z)
+    case 1 => Future(v(0))
     case _ => {
       val (left, right) = v.splitAt(v.length >> 1)
-      m.op(spark(left, m), spark(right, m))
+      val lf = Future(spark(left, m))
+      val rf = Future(spark(right, m))
+      val result = for {
+        l <- lf
+        r <- rf
+      } yield m.op(l, r)
     }
   }
 }
 
-val p1 = spark(IndexedSeq(1, 2, 3, 4), intAdditionMonoid) // 10
-val p2 = spark(IndexedSeq(1, 2, 3, 4, 5), intMultiplicationMonoid) // 120
+val p1 = Await.result(spark(IndexedSeq(1, 2, 3, 4), intAdditionMonoid), Duration.Inf) // 10
+val p2 = Await.result(spark(IndexedSeq(1, 2, 3, 4, 5), intMultiplicationMonoid), Duration.Inf) // 120
