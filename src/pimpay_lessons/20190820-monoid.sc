@@ -10,7 +10,7 @@ trait Monoid[A] extends Semigroup[A] {
   def z:A
 }
 
-val intAdditionMonoid:Monoid[Int] = new Monoid[Int] {
+implicit def intAdditionMonoid:Monoid[Int] = new Monoid[Int] {
   override def z: Int = 0
   override def op(a: Int, b: Int): Int = a + b
 }
@@ -49,21 +49,75 @@ List(1,2,3) foldUsing intAdditionMonoid
 //a + (b + (c + d))
 // (a + b) + (c + d)
 
-def spark[A](v:IndexedSeq[A], m:Monoid[A]):Future[A]= {
+
+def spark[A](v:IndexedSeq[A])(m:Monoid[A]):Future[A] = {
   v.length match {
-    case 0 => Future(m.z)
-    case 1 => Future(v(0))
+    case 0 => Future.successful(m.z)
+    case 1 => Future.successful(v(0))
     case _ => {
       val (left, right) = v.splitAt(v.length >> 1)
-      val lf = Future(spark(left, m))
-      val rf = Future(spark(right, m))
-      val result = for {
-        l <- lf
-        r <- rf
-      } yield m.op(l, r)
+      val lf = spark(left)( m)
+      val rf = spark(right)(m)
+      (lf zip rf).map((m.op _).tupled)
     }
   }
 }
 
-val p1 = Await.result(spark(IndexedSeq(1, 2, 3, 4), intAdditionMonoid), Duration.Inf) // 10
-val p2 = Await.result(spark(IndexedSeq(1, 2, 3, 4, 5), intMultiplicationMonoid), Duration.Inf) // 120
+val p1 = Await.result(spark(IndexedSeq(1, 2, 3, 4))( intAdditionMonoid), Duration.Inf) // 10
+val p2 = Await.result(spark(IndexedSeq(1, 2, 3, 4, 5))( intMultiplicationMonoid), Duration.Inf) // 120
+
+def foldMap[A, B](s: Seq[A])(m: Monoid[B])(f: A => B): B =
+  s.foldLeft(m.z)((a, el) => m.op(a, f(el)))
+
+def length[A](s: Seq[A]): Int = foldMap(s)(intAdditionMonoid)(_ => 1)
+def sum(s: Seq[Int]): Int = foldMap(s)(intAdditionMonoid)(identity)
+
+def avt(s: Seq[Int]): Double = sum(s) / length(s)
+
+def avt1(s: Seq[Int]): Double = {
+ val (su, le) = foldMap(s)(product(intAdditionMonoid, intAdditionMonoid))(_ -> 1)
+  su.toDouble / le
+}
+
+length(List(1, 2, 5))
+
+sum(List(1, 2, 5))
+
+avt1(List(1, 2, 5))
+
+def product[A, B](ma: Monoid[A], mb: Monoid[B]): Monoid[(A, B)] = new Monoid[(A, B)] {
+  override def z: (A, B) = ma.z -> mb.z
+  override def op(a: (A, B), b: (A, B)): (A, B) = ma.op(a._1, b._1) -> mb.op(a._2, b._2)
+}
+
+implicit def endofunctionMonoid[A]:Monoid[A => A] = new Monoid[A=>A]{
+  override def z: (A) => A = identity
+  override def op(a: (A) => A, b: (A) => A): (A) => A = a andThen b
+}
+
+def srt(i:Int):Int = i * i
+def twice(i:Int):Int = i * 2
+
+implicit class MonoidSyntax[A: Monoid](a: A) {
+  def |@| (b: A):A = implicitly[Monoid[A]].op(a, b)
+}
+
+(srt _ |@| twice)(3)
+//2 |@| 3
+
+
+implicit def mapMergeMonoid[K, V: Monoid]:Monoid[Map[K,V]] = new Monoid[Map[K, V]] {
+  override def z: Map[K, V] = Map[K, V]()
+  override def op(a: Map[K, V], b: Map[K, V]): Map[K, V] = {
+    var acc = Map[K, V]()
+    (a.keySet union b.keySet).map((i: K) => {acc ++ (i -> a.getOrElse(i,0) + b.getOrElse(i, 0))})
+    acc
+  }
+
+}
+
+
+val lim1 = Map("sdek" -> 100.0, "beta" -> 20.00)
+val lim2 = Map("beta" -> 30.0, "dpd" -> 4)
+
+lim1 |@| lim2 // Map("sdek" -> 100, "beta" -> 50, "dpd" -> 4)
