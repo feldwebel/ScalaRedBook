@@ -10,9 +10,10 @@ trait Monoid[A] extends Semigroup[A] {
   def z:A
 }
 
-implicit def intAdditionMonoid:Monoid[Int] = new Monoid[Int] {
-  override def z: Int = 0
-  override def op(a: Int, b: Int): Int = a + b
+implicit def intAdditionMonoid[N: Numeric]:Monoid[N] = new Monoid[N] {
+  val n = implicitly[Numeric[N]]
+  override def z: N = n.zero
+  override def op(a: N, b: N): N = n.plus(a, b)
 }
 
 val intMultiplicationMonoid:Monoid[Int] = new Monoid[Int] {
@@ -76,7 +77,7 @@ def avt(s: Seq[Int]): Double = sum(s) / length(s)
 
 def avt1(s: Seq[Int]): Double = {
  val (su, le) = foldMap(s)(product(intAdditionMonoid, intAdditionMonoid))(_ -> 1)
-  su.toDouble / le
+  su / le
 }
 
 length(List(1, 2, 5))
@@ -109,8 +110,9 @@ implicit class MonoidSyntax[A: Monoid](a: A) {
 implicit def mapMergeMonoid[K, V: Monoid]:Monoid[Map[K,V]] = new Monoid[Map[K, V]] {
   override def z: Map[K, V] = Map[K, V]()
   override def op(a: Map[K, V], b: Map[K, V]): Map[K, V] = {
+    val v = implicitly[Monoid[V]]
     var acc = Map[K, V]()
-    (a.keySet union b.keySet).map((i: K) => {acc ++ (i -> a.getOrElse(i,0) + b.getOrElse(i, 0))})
+    (a.keySet union b.keySet).map((i: K) => {acc + (i -> v.op(a.getOrElse(i, v.z), b.getOrElse(i, v.z)))})
     acc
   }
 
