@@ -153,3 +153,4 @@ def isSorted[A](chunks:IndexedSeq[Seq[A]]):Boolean = foldWithMonoid(chunks)(isSo
 
 isSorted(IndexedSeq(Seq(1,2,3),Seq(4,5,6),Seq(7))) == true
 isSorted(IndexedSeq(Seq(1,2,3),Seq(2,4,5,6),Seq(7))) == false
+
