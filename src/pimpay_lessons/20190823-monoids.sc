@@ -147,8 +147,13 @@ def watch2:Map[Server,ListOfPings] = Map(
 
 val r = (watch1 |@| watch2) mapValues (l => l.collect{case Some(d) => d } ) mapValues avg
 
+def foldSeqWithMonoid[A](s:Seq[A])(implicit m:Monoid[A]):A = s.foldRight(m.z)(m.op)
 
-def isSorted[A](chunks:IndexedSeq[Seq[A]]):Boolean = foldWithMonoid(chunks)(isSortedMonoid)
+implicit def isSortedMonoid:Monoid[Boolean] = new Monoid[Boolean] {
+  override def z: Boolean = false
+  override def op(a: Boolean, b: Boolean): Boolean =
+}
+def isSorted[A](chunks:IndexedSeq[Seq[A]]):Boolean = foldSeqWithMonoid(chunks)(isSortedMonoid)
 
 
 isSorted(IndexedSeq(Seq(1,2,3),Seq(4,5,6),Seq(7))) == true
