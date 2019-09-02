@@ -1,3 +1,11 @@
+trait Semigroup[A] {
+  def op(a:A, b:A):A
+}
+
+trait Monoid[A] extends Semigroup[A] {
+  def z:A
+}
+
 def mapReduce[A,B](seq:Seq[A])(f: A => B)(implicit m: Monoid[B]): B = seq.foldLeft(m.z)((acc, el) => m.op(acc, f(el)))
 
 
@@ -18,6 +26,7 @@ def findMax[A: Ordering](chunks:Seq[Seq[A]]): Option[A] = {
 
 findMax(Seq(Seq(1, 392), Seq(22, 0)))
 findMax(Seq(Seq(), Seq()))
+
 
 case class Sorted[A: Ordering](isSorted: Boolean, min: Option[A], max: Option[A])
 
