@@ -22,7 +22,8 @@ implicit val optionFunctor:Functor[Option] = new Functor[Option] {
   override def map[A, B](fa: Option[A])(f: (A) => B): Option[B] = fa map f
 }
 
-implicit def eitherFunctor[Fixed]:Functor[({type lambda[A] = Either[Fixed,A]})#lambda] = new Functor[({type lambda[A] = Either[Fixed, A]})#lambda] {
+implicit def eitherFunctor[Fixed]:Functor[({type lambda[A] = Either[Fixed,A]})#lambda] =
+  new Functor[({type lambda[A] = Either[Fixed, A]})#lambda] {
   override def map[A, B](fa: Either[Fixed, A])(f: (A) => B): Either[Fixed, B] = fa map f
 }
 
@@ -53,7 +54,7 @@ Functor[List].fproduct(List("a", "b", "c"))(_.charAt(0).toShort).toMap
 Functor[({type l[x] = Either[String,x]})#l].map(Right(2))(_*3)
 
 
-val x: {type H[X] = (X,String)} =
+//val x: {type H[X] = (X,String)} =
 case class X() {
   type Inner = String
 }
@@ -67,11 +68,14 @@ val y2: x2.Inner = "str"
  * HOMEWORK
  */
 // (A,Fixed)
-implicit def firstTuple2Functor[Fixed]:Functor[???] = ???
+implicit def firstTuple2Functor[Fixed]:Functor[({type l[A] = (A,Fixed)})#l] =
+  new Functor[({type l[A] = (A,Fixed)})#l] {
+    override def map[A, B](fa: (A, Fixed))(f: A => B): (B, Fixed) = f(fa._1) -> fa._2
+  }
 Functor[({type l[x] = (x,String)})#l].map(1 -> "str")(_*3) // (3,"str")
 
 // Fixed => A
 // Fixed => B
 // f: A => B
-implicit def func1Functor[Fixed]:Functor[???] = ???
+//implicit def func1Functor[Fixed]:Functor[???] = ???
 /// Int=>String,    String->Boolean ==>> Int=>Boolean
