@@ -79,3 +79,18 @@ Functor[({type l[x] = (x,String)})#l].map(1 -> "str")(_*3) // (3,"str")
 // f: A => B
 //implicit def func1Functor[Fixed]:Functor[???] = ???
 /// Int=>String,    String->Boolean ==>> Int=>Boolean
+
+
+trait EitherLambda[Fixed] {
+  type T[x] = Either[Fixed,x]
+}
+
+trait Tuple2Fixed[Fixed] {
+  type T[X] = (X, Fixed)
+}
+
+implicit def fstTupleFunctor[Fixed]: Functor[Tuple2Fixed[Fixed]#T] = new Functor[Tuple2Fixed[Fixed]#T] {
+  override def map[A, B](fa: (A, Fixed))(f: A => B) = f(fa._1) -> fa._2
+}
+
+Functor[EitherLambda[String]#T].map(Right(2))(_*3)
