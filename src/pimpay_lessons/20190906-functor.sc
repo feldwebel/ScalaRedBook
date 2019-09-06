@@ -26,19 +26,19 @@ object Functor {
 }
 
 case class Id[A](v:A)
+case class Id2[A](v:A)
 
 implicit val idFunctor:Functor[Id] = new Functor[Id]{
   override def map[A, B](fa: Id[A])(f: A => B) = Id(f(fa.v))
 }
 
-implicit class IdOps[A, B](id: Id[A]) {
-  val func = implicitly[Functor[Id]]
-  def map(f: A => B): Id[B] = func.map(id)(f)
+implicit class FunctorOps[A, F[A]](id: F[A]) (implicit func: Functor[F]){
+  def map[B](f: A => B): F[B] = func.map(id)(f)
 }
 
 Id(5).map(_*5)
 
 import scala.reflect.runtime.universe._
 show { reify {
-  for (i <- Id(5)) yield i * 5
+   for (i <- Id(5)) yield i * 5
 }}
