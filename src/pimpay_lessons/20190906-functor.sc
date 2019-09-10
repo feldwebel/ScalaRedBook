@@ -1,7 +1,7 @@
 import scala.languageFeature.higherKinds
 import scala.languageFeature.reflectiveCalls
 
-trait Functor[F[_]] { // HKT
+trait Functor[F[_]] { self=> // HKT
   def map[A,B](fa:F[A])(f:A=>B):F[B]
 
   def lift[A,B](f:A=>B):F[A] => F[B] = map(_)(f)
@@ -11,6 +11,12 @@ trait Functor[F[_]] { // HKT
   def as[A,B](fa:F[A], b:B):F[B] = map(fa)(_=>b)
 
   def fproduct[A,B](fa:F[A])(f:A=>B):F[(A,B)] = map(fa)(a => a -> f(a))
+
+  def compose[G[_]: Functor]: Functor[({type L[a] = F[G[a]]})#L] = new Functor[({
+  type L[a] = F[G[a]]
+})#L] {
+    override def map[A, B](fa: F[G[A]])(f: A => B) = ?????????
+  }
 }
 
 implicit val listFunctor:Functor[List] = new Functor[List] {
@@ -35,8 +41,12 @@ implicit val id2Functor:Functor[Id2] = new Functor[Id2]{
   override def map[A, B](fa: Id2[A])(f: A => B) = Id2(f(fa.v))
 }
 
-implicit class FunctorOps[A, F[A]](id: F[A]) (implicit func: Functor[F]){
+/*implicit class FunctorOps[A, F[A]](id: F[A]) (implicit func: Functor[F]){
   def map[B](f: A => B): F[B] = func.map(id)(f)
+}*/
+
+implicit class FunctOps[A, F[_]: Functor](id: F[A]){ //context bound
+  def map[B](f:A=>B):F[B] = implicitly[Functor[F]].map(id)(f)
 }
 
 Id(5).map(_*5)
