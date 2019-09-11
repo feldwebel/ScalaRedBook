@@ -15,7 +15,8 @@ trait Functor[F[_]] { self=> // HKT
   def compose[G[_]: Functor]: Functor[({type L[a] = F[G[a]]})#L] = new Functor[({
   type L[a] = F[G[a]]
 })#L] {
-    override def map[A, B](fa: F[G[A]])(f: A => B) = ?????????
+    val G = implicitly[Functor[G]]
+    override def map[A, B](fa: F[G[A]])(f: A => B) = self.map(fa)((ga:G[A]) => G.map(ga)(f))
   }
 }
 
