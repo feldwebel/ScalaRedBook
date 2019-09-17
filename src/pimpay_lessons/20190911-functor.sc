@@ -115,4 +115,4 @@ implicit class FunctionOps[A,B](f: A => B) {
 f applyOnNested Option(User(1, 1828))
 f applyOnNested nested
 val r3 = f applyOnNested nested3
-Await.result(r3, Duration.Inf
+Await.result(r3, Duration.Inf)
