@@ -46,6 +46,10 @@ implicit val listMonad:Monad[List] = new Monad[List]{
 
 case class State[S,A](run:S => (A,S))
 
+trait StateF[Fixed] {
+  type l[x] = State[Fixed,x]
+}
+
 implicit def stateMonad[S]:Monad[({type lambda[A] = State[S,A]})#lambda] =
   new Monad[({type lambda[A] = State[S,A]})#lambda] {
     override def flatMap[A, B](fa: State[S, A])(f: A => State[S, B]) = State(s => {
@@ -58,4 +62,4 @@ implicit def stateMonad[S]:Monad[({type lambda[A] = State[S,A]})#lambda] =
 
 // Either
 
-implicit def rightBiasedEither[E] ???s22222222@i
+implicit def rightBiasedEither[E] ???
