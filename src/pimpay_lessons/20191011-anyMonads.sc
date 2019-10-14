@@ -4,7 +4,7 @@ trait Monad1[F[_]]{
 
   def map[A,B](fa:F[A])(f: A=>B):F[B] = flatMap(fa)(fa => unit(f(fa)))
   def join[A](ffa:F[F[A]]): F[A] = flatMap(ffa)(identity)
-  def compose[A,B,C](f:A=>F[B])(g:B=>F[C]):A=>F[C] = ???
+  def compose[A,B,C](f:A=>F[B])(g:B=>F[C]):A=>F[C] = flatMap(flatMap(a)(f(a)))(b => g(b))
 }
 
 trait Monad2[F[_]]{
