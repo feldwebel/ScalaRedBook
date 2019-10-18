@@ -1,3 +1,4 @@
+import scala.language.higherKinds
 trait Functor[F[_]] { self =>
   def map[A,B](fa:F[A])(f:A=>B):F[B]
   // derivates
@@ -25,6 +26,7 @@ trait Applicative[F[_]] extends Functor[F] {
   def sequence[A](fas:List[F[A]]):F[List[A]] = traverse(fas)(identity)
   def traverse[A,B](as:List[A])(f:A=>F[B]):F[List[B]] =
     as.foldLeft(unit(List.empty[B]))( (acc, el) => combine(acc, f(el))(_ :+ _))
+
   def replicateM[A](n:Int)(fa:F[A]):F[List[A]] = sequence(List.fill(n)(fa))
 }
 
@@ -32,6 +34,10 @@ trait Monad[F[_]] extends Applicative[F] {
   def flatMap[A,B](fa:F[A])(f:A=>F[B]):F[B]
   def ap[A,B](fa:F[A])(ff:F[A=>B]):F[B] = flatMap(fa)(a => map(ff)(f => f(a)))
   override def map[A,B](fa:F[A])(f: A=>B):F[B] = flatMap(fa)(a => unit(f(a)))
+
+  //derivates
+  //def flatten
+  //def compose
 }
 
 
@@ -84,10 +90,54 @@ val r = for {
 } yield a + b
 
 
-// List[Par[A]] => Par[List[A]] == sequence
-// List[A] => Future[B] => Future[List[B]] == traverse
+case class Reader[R,A](run:R=>A)
+
+implicit def readerMonad[R]:Monad[({type l[x] = Reader[R,x]})#l] = new Monad[({type l[x] = Reader[R, x]})#l] {
+  override def unit[A](a: => A) = Reader(_ => a)
+  override def flatMap[A, B](fa: Reader[R, A])(f: (A) => Reader[R, B]) = Reader(r => {
+    val a = fa.run(r)
+    f(a).run(r)
+  })
+}
+
+object Reader {
+  def ask[R]:Reader[R,R] = Reader(identity)
+  //def askS ???
+}
+
+implicit class MonadOps[A](v: => A) {
+  def pure[F[_] : Monad]:F[A] = implicitly[Monad[F]].unit(v)
+}
+
+case class DbConfig(host:String)
+case class AppConfig(logLevel:String, db:DbConfig)
+// AppConfig :: String x DbConfig
+
+type AppReader[A] = Reader[AppConfig, A]
 
 
-//Functor[Option].map(Some(4))(_*2)
-// Writer monad
-case class Reader[R, A](run: R=>A)
+def bootstrap(app:AppConfig):Unit = ()
+
+def saveToDb(app:DbConfig, input:String):Boolean = true
+
+def dologic(input:String):AppReader[String] = (input * 2).pure[AppReader]
+
+
+
+
+
+def program:AppReader[String] = for {
+  _     <- Reader(bootstrap) //bootstrap.reader
+  input <- "yolo".pure[AppReader]
+  db    <- Reader.askS[AppConfig](_.dbConfig)
+  res   <- Reader((app:AppConfig) => saveToDb(app.db, input))
+} yield db.host
+
+val res = program.run(AppConfig("warn", DbConfig("localhost")))
+res
+
+2.pure[Option]
+2.pure[List]
+
+
+Functor[Option].map(Some(4))(_*2)
