@@ -19,15 +19,34 @@ trait Applicative[F[_]] extends Functor[F] {
 
   // derivates
   def map[A,B](fa:F[A])(f:A=>B):F[B] = ap(fa)(unit(f))
-  def combine[A,B,C](fa:F[A], fb:F[B])(f: (A,B) => C):F[C] = map(product(fa,fb))(f.tupled)
   def product[A,B](fa:F[A], fb:F[B]):F[(A,B)] = ap(fa)(map(fb)(b => _ -> b))
+  def map2[A,B,C](fa:F[A], fb:F[B])(f: (A,B) => C):F[C] = map(product(fa,fb))(f.tupled) //combine
+  def map3[A,B,C,D](fa:F[A], fb:F[B], fc:F[C])(f:(A,B,C) => D):F[D] =
+    map(product(fa, product(fb, fc))){ case (a, (b, c)) => f(a, b, c)}
+
+  //def compose[G[_]: Applicative] = Applicative.compose[F,G]
 
   // for list
   def sequence[A](fas:List[F[A]]):F[List[A]] = traverse(fas)(identity)
   def traverse[A,B](as:List[A])(f:A=>F[B]):F[List[B]] =
-    as.foldLeft(unit(List.empty[B]))( (acc, el) => combine(acc, f(el))(_ :+ _))
+    as.foldLeft(unit(List.empty[B]))( (acc, el) => map2(acc, f(el))(_ :+ _))
 
   def replicateM[A](n:Int)(fa:F[A]):F[List[A]] = sequence(List.fill(n)(fa))
+
+
+  def ifA[A](cond:F[Boolean])(onTrue: => F[A], onFalse: => F[A]):F[A] = map(product(cond, product(onTrue, onFalse))) {
+    case (c, (t, f)) => if (c) t else f
+  }
+  ///map(cond, onTrue, onFalse)((c,t,f) => if (c) t else f)
+}
+
+object Applicative{
+  def compose[F[_]: Applicative, G[_]: Applicative]: Applicative[({type l[x] = F[G[x]]})#l] =
+    new Applicative[({type l[x] = F[G[x]]})#l] {
+      override def unit[A](a: => A): F[G[A]] = ???
+
+      override def ap[A, B](fa: F[G[A]])(ff: F[G[A => B]]):F[G[B]] = ???
+    }
 }
 
 trait Monad[F[_]] extends Applicative[F] {
@@ -35,9 +54,17 @@ trait Monad[F[_]] extends Applicative[F] {
   def ap[A,B](fa:F[A])(ff:F[A=>B]):F[B] = flatMap(fa)(a => map(ff)(f => f(a)))
   override def map[A,B](fa:F[A])(f: A=>B):F[B] = flatMap(fa)(a => unit(f(a)))
 
-  //derivates
-  //def flatten
-  //def compose
+  // derivates
+  def flatten[A](ffa:F[F[A]]):F[A] = ???
+  def compose[A,B,C](f:A => F[B])(g: B => F[C]):A => F[C] = ???
+
+
+  def ifM[A](cond:F[Boolean])(onTrue: => F[A], onFalse: => F[A]):F[A] = flatMap(cond)(c => if (c) onTrue else onFalse)
+  def filterM[A](list:List[A])(f: A => F[Boolean]):F[List[A]] = ???
+}
+
+object Monad {
+  def apply[F[_] : Monad]:Monad[F] = implicitly[Monad[F]]
 }
 
 
@@ -100,14 +127,12 @@ implicit def readerMonad[R]:Monad[({type l[x] = Reader[R,x]})#l] = new Monad[({t
   })
 }
 
-object Reader {
-  def ask[R]:Reader[R,R] = Reader(identity)
-  //def askS ???
-}
+
 
 implicit class MonadOps[A](v: => A) {
   def pure[F[_] : Monad]:F[A] = implicitly[Monad[F]].unit(v)
 }
+
 
 case class DbConfig(host:String)
 case class AppConfig(logLevel:String, db:DbConfig)
@@ -116,21 +141,34 @@ case class AppConfig(logLevel:String, db:DbConfig)
 type AppReader[A] = Reader[AppConfig, A]
 
 
-def bootstrap(app:AppConfig):Unit = ()
-
-def saveToDb(app:DbConfig, input:String):Boolean = true
-
-def dologic(input:String):AppReader[String] = (input * 2).pure[AppReader]
 
 
+object Reader {
+  sealed case class AskPartial[R]() {
+    def apply[RR](f: R=>RR):Reader[R,RR] = Reader(f(_))
+  }
 
+  def ask[R]:Reader[R,R] = Reader(identity)
+  def askS[R]: AskPartial[R] = AskPartial[R]
+}
+
+def bootstrap(app: AppConfig): Unit = ()
+
+def saveToDb(app: AppConfig, input: String): Boolean = true
+
+def dologic(input: String): AppReader[String] = (input * 2).pure[AppReader]
+
+
+implicit class ReaderFunctionOps[R,A](f:R=>A) {
+  def asReader:Reader[R,A] = Reader(f)
+}
 
 
 def program:AppReader[String] = for {
-  _     <- Reader(bootstrap) //bootstrap.reader
+  _     <- (bootstrap _).asReader
   input <- "yolo".pure[AppReader]
-  db    <- Reader.askS[AppConfig](_.dbConfig)
-  res   <- Reader((app:AppConfig) => saveToDb(app.db, input))
+  db    <- Reader.askS[AppConfig](_.db)
+  res   <- (saveToDb(_:AppConfig, input)).asReader
 } yield db.host
 
 val res = program.run(AppConfig("warn", DbConfig("localhost")))
@@ -139,5 +177,7 @@ res
 2.pure[Option]
 2.pure[List]
 
+Monad[Option].ifM(None)(Option(1), None)
+Monad[List].ifM(List(true, false, true))(List("a", "b", "c"), List("z"))
 
 Functor[Option].map(Some(4))(_*2)
