@@ -57,10 +57,47 @@ object Applicative {
     }
 }
 
+trait Monoid[A]{
+  def zero:A
+  def op(a:A, b:A):A
+}
+
+val addMonoid = new Monoid[Int]{
+  override def zero = 0
+
+  override def op(a: Int, b: Int) = a + b
+}
+
+type Const[M, A] = M
+def monoidApplicative[M](M: Monoid[M]): Applicative[({type l[x] = Const[M, x]})#l] = new Applicative[({type l[x] = Const[M, x]})#l]{
+  override def unit[A](a: => A) = M.zero
+
+  override def ap[A, B](fa: Const[M, A])(ff: Const[M, A => B]) = M.op(fa, ff)
+}
+
 trait Traverse[T[_]] {
   def traverse[F[_] : Applicative, A, B](tas:T[A])(f: A => F[B]):F[T[B]]
   def sequence[F[_]: Applicative, A](tas:T[F[A]]):F[T[A]] = traverse(tas)(identity)
+
+  def map[A, B](tas:T[A])(f: A => B):T[B] = {
+    traverse[Option, A, B](tas)(a => Option(f(a)))(Applicative[Option]).get
+
+    /*(
+      traverse[({type l[x] = State[Unit,x]})#l, A, B]
+        (tas)
+        (a => State(run = u => (f(a), u)))(Applicative[({type l[x] = State[Unit,x]})#l])
+        .run(())._1
+    )*/
+  }
+  def foldMap[M, A](tas:T[A])(f: A => M)(m: Monoid[M]): M =
+    traverse[({type l[x] = Const[M, x]})#l, A, Nothing](tas)(f)(monoidApplicative(m))
 }
+
+listTraverse.foldMap(List(1, 2, 3))(identity)(addMonoid)
+optionTraverse.foldMap(Option(2))(identity)(addMonoid)
+optionTraverse.foldMap(Option.empty[Int])(identity)(addMonoid)
+treeTraverse.foldMap(Tree(2, List(Tree(2, Nil))))(identity)(addMonoid)
+
 
 implicit val listTraverse:Traverse[List] = new Traverse[List] {
   override def traverse[F[_] : Applicative, A, B](tas: List[A])(f: A => F[B]):F[List[B]] = {
@@ -76,11 +113,26 @@ implicit val optionTraverse:Traverse[Option] = new Traverse[Option] {
   }
 }
 
-implicit def mapTraverse[K]:Traverse[({type l[x] = Map[K,x]})#l] = ???
+implicit def mapTraverse[K]:Traverse[({type l[x] = Map[K,x]})#l] = new Traverse[({type l[x] = Map[K,x]})#l]{
+  override def traverse[F[_] : Applicative, A, B](tas: Map[K, A])(f: A => F[B]) = {
+    val F = implicitly[Applicative[F]]
+    val list = listTraverse.traverse[F, (K,A), (K,B)](tas.toList){case (k,v) => F.product(F.unit(k), f(v))}(F)
+    F.map(list)(_.toMap)
+  }
+}
 
 case class Tree[A](head:A, tail:List[Tree[A]])
 
-implicit val treeTraverse:Traverse[Tree] = ???
+implicit val treeTraverse:Traverse[Tree] = new Traverse[Tree]{
+  override def traverse[F[_] : Applicative, A, B](tas: Tree[A])(f: A => F[B]) = {
+    val F = implicitly[Applicative[F]]
+
+    val bHead = f(tas.head)
+    val bTail = listTraverse.traverse(tas.tail)(ta => treeTraverse.traverse(ta)(f)(F))(F)
+
+    F.map2(bHead, bTail)(Tree.apply)
+  }
+}
 
 trait Monad[F[_]] extends Applicative[F] {
   def flatMap[A,B](fa:F[A])(f:A=>F[B]):F[B]
