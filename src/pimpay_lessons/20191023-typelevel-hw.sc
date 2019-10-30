@@ -11,6 +11,7 @@ implicit class languageOps[L <: Language](l:L) {
 
 @implicitNotFound("Ой не гони, php огонь")
 trait Sucks[L <: Language]
+implicit val s = new Sucks[Scala.type]{}
 
 Scala sucks // should compile
 // обязательно new line
