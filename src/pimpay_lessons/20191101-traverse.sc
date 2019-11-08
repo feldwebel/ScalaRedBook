@@ -279,8 +279,6 @@ val tree = Tree("a", List(Tree("b", Nil)))
 
 val tree1:Tree[Option[String]] = Tree(Option("a"), List(Tree(Option("b"), Nil)))
 
-val 
-val map = Map("sdek" -> tree, "beta")
 treeTraverse.zipWithIndex1(tree)
 
 treeTraverse.toList(tree)
