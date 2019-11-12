@@ -61,10 +61,11 @@ implicit val optionMonad:Monad[Option] = new Monad[Option] {
 
 
 case class State[S,A](run:S => (A,S))
-object State{
-  def get[S]: State[S,S] = State(run = s => (s,s))
-  def set[S](f: (S) => S):State[S, Unit] = State(run = s => ((), f(s)))
+object State {
+  def get[S]:State[S,S] = State(run = s => (s,s))
+  def set[S](f: (S) => S):State[S,Unit] = State(run = s => ((), f(s)))
 }
+
 
 trait Monoid[A] {
   def zero:A
@@ -77,16 +78,20 @@ val addMonoid = new Monoid[Int] {
 }
 
 type Const[M, A] = M
+
 def monoidApplicative[M](M:Monoid[M]):Applicative[({type l[x] = Const[M,x]})#l] = new Applicative[({type l[x] = Const[M, x]})#l] {
   override def unit[A](a: => A):M = M.zero
   override def ap[A, B](fa: M)(ff: M):M = M.op(fa,ff)
 }
 
-def constApplicative[C](const: C):Applicative[({type l[x] = Const[C, x]})#l] = new Applicative[({type l[x] = Const[C, x]})#l]{
+
+def constApplicative[C](const:C):Applicative[({type l[x] = Const[C,x]})#l] = new Applicative[({type l[x] = Const[C, x]})#l] {
   override def unit[A](a: => A):C = const
-  override def ap[A, B](fa: Const[C, A])(ff: Const[C, A => B]): C = const
+  override def ap[A, B](fa: C)(ff: C):C = const
 }
+
 implicit val meaningOfLife = constApplicative(42)
+
 
 trait Traverse[T[_]] extends Functor[T] {
   // required
@@ -95,55 +100,54 @@ trait Traverse[T[_]] extends Functor[T] {
   // derives
   def sequence[F[_] : Applicative, A](tas: T[F[A]]): F[T[A]] = traverse(tas)(identity)
 
-  //concrete F = Any
+
+  // concrete F = Any
   def map[A, B](tas: T[A])(f: A => B): T[B] = traverse[Option,A,B](tas)(a => Option(f(a)))(optionMonad).get
 
-  //concrete F = Const + Monoid
+  // concrete F = Const + Monoid
   def foldMap[M,A](tas: T[A])(f: A => M)(m:Monoid[M]): M =
     traverse[({type l[x] = Const[M,x]})#l,A,Nothing](tas)(f)(monoidApplicative(m))
 
-  //concreteF = State
-  def traverseS[S,A,B](tas:T[A])(f:A => State[S,B]): State[S, T[B]] =
-    traverse(tas)(f)
-
-  def zipWithIndex[A](tas:T[A]):T[(A,Int)] = traverseS(tas)((a: A) => for {
-    i <- State.get[Int]
-    _ <- State.set[Int](k => k + 1)
-  } yield (a, i) ).run(0)._1
+  // concrete F = State
+  def traverseS[S,A,B](tas:T[A])(f: A => State[S,B]):State[S, T[B]] = traverse(tas)(f)
 
 
-  def toList[A](tas:T[A]):List[A] = traverseS(tas)((a: A) => for {
-    l <-State.get[List[A]]
-    _ <- State.set[List[A]](l => a :: l)
-  } yield ()).run(List.empty[A])._2.reverse
+  def toList[A](tas:T[A]):List[A] = traverseS(tas) {
+    (a:A) => State.set[List[A]](l => a :: l)
+  }.run(List.empty[A])._2.reverse
 
   // homework
-  def mapAccum[S,A,B](tas:T[A])(z:S)(f: (A,S) => (B,S)):(T[B], S) = traverseS(tas)((a: A) => for {
+  def mapAccum[S,A,B](tas:T[A])(z:S)(f: (A,S) => (B,S)):(T[B], S) = traverseS(tas)( (a:A) => for {
     s <- State.get[S]
-    (b, s2) = f(a, s)
+    (b, s2) = f(a,s)
     _ <- State.set[S](_ => s2)
-  } yield b ).run(z) // via traverseS
-  // + implement zipWithIndex, and toList via mapAccum
-  def zipWithIndex1[A](tas:T[A]):T[(A,Int)] = mapAccum(tas)(0)((a, i) => (a ->i, i+1))._1
+  } yield b).run(z)
 
-  def foldMap2[M,A](tas: T[A])(f: A => M)(m:Monoid[M]): M =
-    mapAccum(tas)(m.zero)((a, s) => () -> m.op(f(a), s))._2
+  def zipWithIndex[A](tas:T[A]):T[(A,Int)] = mapAccum(tas)(0)( (a,i) => (a -> i, i+1))._1
 
 
-  def compose[H[_]: Traverse]: Traverse[({type l[x] = T[H[x]]})#l] = Traverse.compose(this, implicitly[Traverse[H]])
+  def foldMap2[M,A](tas: T[A])(f: A => M)(m:Monoid[M]): M = mapAccum(tas)(m.zero)( (a, s) => () -> m.op(f(a), s) )._2
 
+  // composition
+  def compose[H[_] : Traverse]:Traverse[({type l[x] = T[H[x]]})#l] = Traverse.compose(this, implicitly[Traverse[H]])
 }
 
 object Traverse {
-  def compose[F[_] : Traverse, G[_]: Traverse]: Traverse[({type l[x] = F[G[x]]})#l] =
-    new Traverse[({type l[x] =  F[G[x]]})#l] {
-      val F = implicitly[Traverse[F]]
-      val G = implicitly[Traverse[G]]
-      override def traverse[AP[_] : Applicative, A, B](tas: F[G[A]])(f: A =>AP[B]):AP[F[G[B]]] = {
-        F.traverse(tas)( ga => G.traverse(ga)(f))
-      }
+  def compose[F[_] : Traverse, G[_] : Traverse]:Traverse[({type l[x] = F[G[x]]})#l] = new Traverse[({type l[x] = F[G[x]]})#l] {
+    val F = implicitly[Traverse[F]]
+    val G = implicitly[Traverse[G]]
+    override def traverse[AP[_] : Applicative, A, B](tas: F[G[A]])(f: (A) => AP[B]):AP[F[G[B]]] = {
+      F.traverse(tas)(ga => G.traverse(ga)(f))
     }
+  }
 }
+
+// Functor
+// Applicative
+// Traverse?
+
+
+
 
 
 
@@ -160,6 +164,7 @@ implicit val optionTraverse: Traverse[Option] = new Traverse[Option] {
     tas.fold(F.unit(Option.empty[B]))(a => F.map(f(a))(Option.apply))
   }
 }
+
 
 
 implicit def mapTraverse[K]: Traverse[({type l[x] = Map[K, x]})#l] = new Traverse[({type l[x] = Map[K, x]})#l] {
@@ -189,7 +194,7 @@ trait Monad[F[_]] extends Applicative[F] {
   override def map[A,B](fa:F[A])(f: A=>B):F[B] = flatMap(fa)(a => unit(f(a)))
 
   // derivates
-  def flatten[A](ffa:F[F[A]]):F[A] = ???
+  def flatten[A](ffa:F[F[A]]):F[A] = flatMap(ffa)(identity)
   def compose[A,B,C](f:A => F[B])(g: B => F[C]):A => F[C] = ???
 
 
@@ -210,6 +215,20 @@ object Monad {
     override def unit[A](a: => A) = F.unit(G.unit(a))
   }
   */
+
+  def composeM[F[_] : Monad, G[_] : Monad : Traverse]:Monad[({type l[x] = F[G[x]]})#l] = new Monad[({type l[x] = F[G[x]]})#l] {
+    val F = implicitly[Monad[F]]
+    val G = implicitly[Monad[G]]
+    val T = implicitly[Traverse[G]]
+
+    override def unit[A](a: => A):F[G[A]] = F.unit(G.unit(a))
+    override def flatMap[A, B](fga: F[G[A]])(f: (A) => F[G[B]]):F[G[B]] = F.flatMap(fga)(ga => {
+      val gfgb = G.flatMap(ga)(a => G.unit(f(a))) // F[G[B]]  but we expect of shape G[_] ???
+      val fggb = T.sequence[F, G[B]](gfgb)(F) // F[G[G[B]], but we need F[G[B]]
+      val fgb  = F.map(fggb)(ggb => G.flatten(ggb))
+      fgb
+    })
+  }
 }
 
 
@@ -252,11 +271,6 @@ implicit class forOps[A, F[_] : Monad](fa:F[A]) {
 }
 
 
-val r = for {
-  a <- Id(5)
-  b <- Id(6)
-} yield a + b
-
 
 
 
@@ -271,16 +285,35 @@ listTraverse.foldMap(List(1,2,3))(identity)(addMonoid)
 optionTraverse.foldMap(Option(2))(identity)(addMonoid)
 optionTraverse.foldMap(Option.empty[Int])(identity)(addMonoid)
 
-treeTraverse.foldMap(Tree(2, List(Tree(2, Nil) )))(identity)(addMonoid)
+val tree:Tree[Option[String]] = Tree(Option("a"), List(Tree(Option("b"), Nil) ))
+
+val treeOptionTraverse = treeTraverse compose optionTraverse
+val map = Map("sdek" -> treeOptionTraverse.map(tree)(_ + "sdek"),
+  "beta" -> treeOptionTraverse.map(tree)(_ + "beta")
+)
+
+// Tree/Option
 
 
-listTraverse.sequence[({type l[x] = Const[Int, x]})#l, Int](List(meaningOfLife.unit(1)))
-val tree = Tree("a", List(Tree("b", Nil)))
+(mapTraverse compose treeTraverse compose optionTraverse).toList(map)
 
-val tree1:Tree[Option[String]] = Tree(Option("a"), List(Tree(Option("b"), Nil)))
+//treeTraverse.toList(tree)
 
-treeTraverse.zipWithIndex1(tree)
+// Option
+// Future
 
-treeTraverse.toList(tree)
+// Future[Option[X]]
 
-(treeTraverse compose optionTraverse).toList(tree1)
+case class OptionT[M[_] : Monad, A](value: M[Option[A]]) {
+  val M = implicitly[Monad[M]]
+  def flatMap[B](f: A => OptionT[M,B]):OptionT[M, B] = OptionT(M.flatMap(value) {
+    case Some(a) => f(a).value
+    case None    => M.unit(None)
+  })
+}
+
+implicit def optionTMonad[M[_] : Monad]:Monad[({type l[x] = OptionT[M, x]})#l] = new Monad[({type l[x] = OptionT[M, x]})#l] {
+  val M = implicitly[Monad[M]]
+  override def flatMap[A, B](fa: OptionT[M, A])(f: (A) => OptionT[M, B]) = fa flatMap f
+  override def unit[A](a: => A):OptionT[M,A] = OptionT(M.unit(Option(a)))
+}
