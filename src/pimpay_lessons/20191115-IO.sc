@@ -1,5 +1,11 @@
 case class Player(name:String, score:Int)
 
+def gameOldFashion(p1:Player, p2:Player):Unit = {
+  if (p1.score > p2.score) println(s"Player #1 ${p1.name} wins")
+  else if (p2.score > p1.score) println(s"Player #2 ${p2.name} wins")
+  else println("draw!")
+}
+
 def detectWinner(p1:Player, p2:Player): Option[Player] = {
   if (p1.score > p2.score) Option(p1)
   else if (p2.score > p1.score) Option(p2)
@@ -16,12 +22,6 @@ def game(p1:Player, p2:Player):IO[Option[Player]] = for {
   _      <- PrintLn(winnerMsg(winner))
 } yield winner
 
-
-def game1(p1:Player, p2:Player):Unit = {
-  if (p1.score > p2.score) println(s"Player #1 ${p1.name} wins")
-  else if (p2.score > p1.score) println(s"Player #2 ${p2.name} wins")
-  else println("draw!")
-}
 
 game(Player("Tom", 0), Player("bob", 10))
 game(Player("Tom", 20), Player("bob", 10))
