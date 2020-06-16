@@ -31,7 +31,7 @@ def length[A, R <: HList](a:A)(implicit gen:Generic.Aux[A, R], len:Len[R]):Int =
 def length2[A, R <: HList](implicit gen:Generic.Aux[A, R], len:Len[R]):Int = len.length()
 
 length((1,2,3))
-// TODO: homework: length2[SignalStatus]
+// TODO: homework: length2[SignalStatus]()
 
 case class Point(x:Int, y:Int)
 
